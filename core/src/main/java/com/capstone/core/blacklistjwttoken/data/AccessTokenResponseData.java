@@ -1,6 +1,5 @@
 package com.capstone.core.blacklistjwttoken.data;
 
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RefreshTokenResponseData {
-    @NotEmpty(message = "{error.refreshtoken.required}")
-    private String refreshToken;
+public class AccessTokenResponseData {
+    private String accessToken;
 }
