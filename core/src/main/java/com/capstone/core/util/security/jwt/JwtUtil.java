@@ -49,6 +49,20 @@ public class JwtUtil {
                 .verify(token);
     }
 
+    public static Long getUserIdFromToken(String token) {
+        DecodedJWT decodedJWT = JwtUtil.decodeJWT(token);
+        return Long.parseLong(decodedJWT.getSubject());
+    }
+
+    public static boolean isValidToken(String token) {
+        try {
+            JwtUtil.validateToken(token);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return false;
+        }
+        return true;
+    }
+
     @Value("${JWT_SECRET_KEY}")
     public void setSecretKey(String secretKey) {
         SECRET_KEY = secretKey;
