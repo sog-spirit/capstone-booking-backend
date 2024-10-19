@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.capstone.core.blacklistjwttoken.data.AccessTokenRequestData;
 import com.capstone.core.blacklistjwttoken.data.RefreshTokenRequestData;
 
 import jakarta.transaction.Transactional;
@@ -19,6 +20,11 @@ import lombok.AllArgsConstructor;
 public class BlacklistJWTTokenController {
 
     private BlacklistJWTTokenService blacklistJWTTokenService;
+
+    @PostMapping("/verify")
+    ResponseEntity<Object> verifyAccessToken(@RequestBody @Valid AccessTokenRequestData accessTokenData) {
+        return blacklistJWTTokenService.verifyAccessToken(accessTokenData);
+    }
 
     @PostMapping("/refresh")
     ResponseEntity<Object> refreshAccessToken(@RequestBody @Valid RefreshTokenRequestData refreshTokenData) {
