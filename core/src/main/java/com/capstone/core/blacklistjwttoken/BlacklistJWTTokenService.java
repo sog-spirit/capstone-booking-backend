@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.capstone.core.blacklistjwttoken.data.AccessTokenRequestData;
 import com.capstone.core.blacklistjwttoken.data.AccessTokenResponseData;
 import com.capstone.core.blacklistjwttoken.data.RefreshTokenRequestData;
 import com.capstone.core.table.BlacklistJWTTokenTable;
@@ -19,6 +20,13 @@ public class BlacklistJWTTokenService {
 
     private BlacklistJWTTokenRepository blacklistJWTTokenRepository;
     private UserRepository userRepository;
+
+    public ResponseEntity<Object> verifyAccessToken(AccessTokenRequestData accessTokenData) {
+        if (!JwtUtil.isValidToken(accessTokenData.getAccessToken())) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     public ResponseEntity<Object> verifyBlacklistToken(RefreshTokenRequestData refreshTokenData) {
         if (!JwtUtil.isValidToken(refreshTokenData.getRefreshToken()) || blacklistTokenIsExist(refreshTokenData.getRefreshToken())) {

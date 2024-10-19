@@ -13,6 +13,4 @@ public class AddNewCenterRequestData {
     private String name;
     @NotEmpty(message = "{error.address.required}")
     private String address;
-    @NotEmpty(message = "{error.jwttoken.required}")
-    private String accessToken;
 }
