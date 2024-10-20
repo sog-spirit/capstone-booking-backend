@@ -16,7 +16,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 public class JwtUtil {
     private static String SECRET_KEY;
     private static String ISSUER;
-    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 10 * 60 * 1000;
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1 * 60 * 1000;
     private static final long REFRESH_TOKEN_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000;
 
     public static String createAccessToken(Long userId) {
@@ -49,7 +49,7 @@ public class JwtUtil {
                 .verify(token);
     }
 
-    public static Long getUserIdFromToken(String token) {
+    public static Long getUserIdFromToken(String token) throws JWTVerificationException {
         DecodedJWT decodedJWT = JwtUtil.decodeJWT(token);
         return Long.parseLong(decodedJWT.getSubject());
     }

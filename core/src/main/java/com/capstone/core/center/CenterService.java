@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.center.data.AddNewCenterRequestData;
 import com.capstone.core.center.data.CenterListResponseData;
 import com.capstone.core.center.data.EditCenterRequestData;
@@ -26,7 +27,12 @@ public class CenterService {
     private CenterRepository centerRepository;
 
     ResponseEntity<Object> addNewCenter(String jwtToken, AddNewCenterRequestData requestData) {
-        Long userId = JwtUtil.getUserIdFromToken(jwtToken);
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         CenterTable newCenter = new CenterTable();
         newCenter.setName(requestData.getName());
         newCenter.setAddress(requestData.getAddress());
@@ -39,6 +45,12 @@ public class CenterService {
     }
 
     ResponseEntity<Object> editCenter(String jwtToken, EditCenterRequestData editCenterRequestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         Optional<CenterTable> queryResult = centerRepository.findById(editCenterRequestData.getId());
         if (queryResult.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -51,7 +63,12 @@ public class CenterService {
     }
 
     ResponseEntity<Object> getCenterList(String jwtToken, Integer pageNo, Integer pageSize) {
-        Long userId = JwtUtil.getUserIdFromToken(jwtToken);
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         Page<CenterListProjection> centerPagedResult = centerRepository.findByUserId(userId, pageable);
         CenterListResponseData responseData = new CenterListResponseData();
