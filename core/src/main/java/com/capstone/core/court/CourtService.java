@@ -1,11 +1,14 @@
 package com.capstone.core.court;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.court.data.AddNewCourtRequestData;
+import com.capstone.core.court.projection.CourtListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.CourtTable;
 import com.capstone.core.table.UserTable;
@@ -35,5 +38,16 @@ public class CourtService {
         newCourt.setCenter(center);
         courtRepository.save(newCourt);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCourtList(String jwtToken, Long centerId) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<CourtListProjection> courtList = courtRepository.findByCenterId(centerId);
+        return new ResponseEntity<>(courtList, HttpStatus.OK);
     }
 }
