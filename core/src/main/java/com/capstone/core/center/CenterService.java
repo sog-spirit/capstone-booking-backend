@@ -1,5 +1,7 @@
 package com.capstone.core.center;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.capstone.core.center.data.AddNewCenterRequestData;
 import com.capstone.core.center.data.CenterListResponseData;
+import com.capstone.core.center.data.EditCenterRequestData;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.UserTable;
@@ -32,6 +35,18 @@ public class CenterService {
         newCenter.setUser(user);
         newCenter.setFieldQuantity(Long.parseLong("0"));
         centerRepository.save(newCenter);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> editCenter(String jwtToken, EditCenterRequestData editCenterRequestData) {
+        Optional<CenterTable> queryResult = centerRepository.findById(editCenterRequestData.getId());
+        if (queryResult.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        CenterTable record = queryResult.get();
+        record.setName(editCenterRequestData.getName());
+        record.setAddress(editCenterRequestData.getAddress());
+        centerRepository.save(record);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
