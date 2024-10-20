@@ -15,7 +15,7 @@ import lombok.Data;
 public class CenterTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
     private String name;
     private String address;
     @ManyToOne
