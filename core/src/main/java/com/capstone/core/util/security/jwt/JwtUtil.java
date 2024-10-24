@@ -16,7 +16,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 public class JwtUtil {
     private static String SECRET_KEY;
     private static String ISSUER;
-    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1 * 60 * 1000;
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1 * 10 * 1000;
     private static final long REFRESH_TOKEN_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000;
 
     public static String createAccessToken(Long userId) {
