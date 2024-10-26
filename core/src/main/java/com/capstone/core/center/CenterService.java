@@ -1,5 +1,6 @@
 package com.capstone.core.center;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -75,5 +76,16 @@ public class CenterService {
         responseData.setTotalPage(centerPagedResult.getTotalPages());
         responseData.setCenterList(centerPagedResult.getContent());
         return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterList(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<CenterListProjection> centerListResult = centerRepository.findByUserId(userId);
+        return new ResponseEntity<>(centerListResult, HttpStatus.OK);
     }
 }

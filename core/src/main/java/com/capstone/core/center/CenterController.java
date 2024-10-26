@@ -38,9 +38,14 @@ public class CenterController {
         return centerService.editCenter(jwtToken, editCenterRequestData);
     }
 
-    @GetMapping("/list")
+    @GetMapping(value = "/list", params = {"pageNo", "pageSize"})
     public ResponseEntity<Object> getCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             @RequestParam(defaultValue = "0") Integer pageNo, @RequestParam(defaultValue = "5") Integer pageSize) {
         return centerService.getCenterList(jwtToken, pageNo, pageSize);
+    }
+
+    @GetMapping(value = "/list")
+    public ResponseEntity<Object> getCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
+        return centerService.getCenterList(jwtToken);
     }
 }
