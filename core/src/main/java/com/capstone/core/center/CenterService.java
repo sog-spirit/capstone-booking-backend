@@ -14,6 +14,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.center.data.AddNewCenterRequestData;
 import com.capstone.core.center.data.CenterListResponseData;
 import com.capstone.core.center.data.EditCenterRequestData;
+import com.capstone.core.center.projection.CenterListDropdownProjection;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.UserTable;
@@ -85,7 +86,18 @@ public class CenterService {
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<CenterListProjection> centerListResult = centerRepository.findByUserId(userId);
+        List<CenterListDropdownProjection> centerListResult = centerRepository.findByUserId(userId);
+        return new ResponseEntity<>(centerListResult, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterDropdownList(String jwtToken, String query) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<CenterListDropdownProjection> centerListResult = centerRepository.findByNameContainingAndUserId(query, userId);
         return new ResponseEntity<>(centerListResult, HttpStatus.OK);
     }
 }

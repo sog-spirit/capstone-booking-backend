@@ -27,8 +27,7 @@ public class ProductInventoryController {
         return productInventoryService.addProductInventory(jwtToken, addNewProductInventoryRequestData);
     }
 
-    @GetMapping
-    @RequestMapping("/list")
+    @GetMapping(value = "/list")
     ResponseEntity<Object> getProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return productInventoryService.getProductInventoryList(jwtToken);
     }

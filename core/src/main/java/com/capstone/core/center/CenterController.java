@@ -48,4 +48,10 @@ public class CenterController {
     public ResponseEntity<Object> getCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return centerService.getCenterList(jwtToken);
     }
+
+    @GetMapping(value = "/list", params = {"query"})
+    public ResponseEntity<Object> getCenterDropdownList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestParam String query) {
+        return centerService.getCenterDropdownList(jwtToken, query);
+    }
 }

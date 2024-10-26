@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.product.data.CreateProductRequestData;
@@ -37,9 +38,14 @@ public class ProductController {
         return productService.editProduct(jwtToken, editProductRequestData);
     }
 
-    @GetMapping
-    @RequestMapping("/list")
+    @GetMapping(value = "/list")
     ResponseEntity<Object> getProductList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return productService.getProductList(jwtToken);
+    }
+
+    @GetMapping(value = "/list", params = {"query"})
+    ResponseEntity<Object> getProductListDropdown(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestParam String query) {
+        return productService.getProductListDropdown(jwtToken, query);
     }
 }
