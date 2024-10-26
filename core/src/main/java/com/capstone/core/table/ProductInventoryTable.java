@@ -23,4 +23,7 @@ public class ProductInventoryTable {
     @ManyToOne
     @JoinColumn(name = "product_id")
     private ProductTable product;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private UserTable user;
 }

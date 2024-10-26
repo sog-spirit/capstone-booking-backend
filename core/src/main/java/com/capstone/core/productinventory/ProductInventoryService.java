@@ -1,14 +1,18 @@
 package com.capstone.core.productinventory;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.productinventory.data.AddNewProductInventoryRequestData;
+import com.capstone.core.productinventory.projection.ProductInventoryListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.ProductInventoryTable;
 import com.capstone.core.table.ProductTable;
+import com.capstone.core.table.UserTable;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
 import lombok.AllArgsConstructor;
@@ -36,8 +40,24 @@ public class ProductInventoryService {
         center.setId(addNewProductInventoryRequestData.getCenterId());
         newProductInventory.setCenter(center);
 
+        UserTable user = new UserTable();
+        user.setId(userId);
+        newProductInventory.setUser(user);
+
         productInventoryRepository.save(newProductInventory);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getProductInventoryList(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<ProductInventoryListProjection> productInventoryList = productInventoryRepository.findByUserId(userId);
+        return new ResponseEntity<>(productInventoryList, HttpStatus.OK);
     }
 }
