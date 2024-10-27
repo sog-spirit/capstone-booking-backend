@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.product.data.CreateProductRequestData;
 import com.capstone.core.product.data.EditProductRequestData;
+import com.capstone.core.product.projection.ProductListDropdownProjection;
 import com.capstone.core.product.projection.ProductListProjection;
 import com.capstone.core.table.ProductTable;
 import com.capstone.core.table.UserTable;
@@ -67,5 +68,16 @@ public class ProductService {
         product.setPrice(editProductRequestData.getPrice());
         productRepository.save(product);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getProductListDropdown(String jwtToken, String query) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<ProductListDropdownProjection> productListDropdownResult = productRepository.findByUserIdAndNameContaining(userId, query);
+        return new ResponseEntity<>(productListDropdownResult, HttpStatus.OK);
     }
 }
