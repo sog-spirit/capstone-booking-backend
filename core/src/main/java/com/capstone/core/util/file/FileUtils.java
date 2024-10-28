@@ -14,15 +14,34 @@ import org.springframework.web.multipart.MultipartFile;
 @PropertySource("classpath:env.properties")
 public class FileUtils {
     private static String ROOT_FILE_PATH;
-    private static final String PHOTO_FILE_EXTENSION = ".jpg";
+    public static final String PHOTO_FILE_EXTENSION = ".jpg";
+    public static final String FOLDER_SEPERATOR = "\\";
 
     public static void writeFile(MultipartFile multipartFile, Long fileId, String baseFolder) throws IOException {
-        File file = new File(ROOT_FILE_PATH + "\\" + baseFolder + "\\" + fileId + "\\" + fileId + PHOTO_FILE_EXTENSION);
+        File file = new File(getImageFilePath(fileId, baseFolder));
         file.getParentFile().mkdirs();
         file.createNewFile();
-        try (OutputStream outputStream = new FileOutputStream(file)) {
+        try (OutputStream outputStream = new FileOutputStream(file, false)) {
             outputStream.write(multipartFile.getBytes());
         }
+    }
+
+    public static String getImageFilePath(Long fileId, String baseFolder) {
+        return new StringBuffer()
+                .append(ROOT_FILE_PATH)
+                .append(FOLDER_SEPERATOR)
+                .append(fileId)
+                .append(FOLDER_SEPERATOR)
+                .append(fileId)
+                .append(PHOTO_FILE_EXTENSION)
+                .toString();
+    }
+
+    public static String getImageFilename(Long fileId) {
+        return new StringBuffer()
+                .append(fileId)
+                .append(PHOTO_FILE_EXTENSION)
+                .toString();
     }
 
     public static String getRootFilePath() {

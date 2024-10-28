@@ -25,6 +25,7 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class CenterService {
+    private static final Long DEFAULT_FIELD_QUANTITY = (long) 0;
 
     private CenterRepository centerRepository;
 
@@ -41,7 +42,7 @@ public class CenterService {
         UserTable user = new UserTable();
         user.setId(userId);
         newCenter.setUser(user);
-        newCenter.setFieldQuantity(Long.parseLong("0"));
+        newCenter.setFieldQuantity(DEFAULT_FIELD_QUANTITY);
         centerRepository.save(newCenter);
         return new ResponseEntity<>(HttpStatus.OK);
     }

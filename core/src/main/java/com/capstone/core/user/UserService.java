@@ -23,6 +23,7 @@ import com.capstone.core.user.projection.ValidateUserProjection;
 import com.capstone.core.userrole.UserRoleRepository;
 import com.capstone.core.userrole.projection.RoleNameProjection;
 import com.capstone.core.util.consts.MessageConstsUtil;
+import com.capstone.core.util.consts.UserRole;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
 import lombok.AllArgsConstructor;
@@ -51,7 +52,7 @@ public class UserService {
             return new ResponseEntity<>(responseData, HttpStatus.CONFLICT);
         }
 
-        if (!roleRepository.existsRoleById(registerFormData.getRole()) && roleRepository.existsRoleByIdNot(Long.parseLong("1"))) {
+        if (!roleRepository.existsRoleById(registerFormData.getRole()) && roleRepository.existsRoleByIdNot(UserRole.ADMIN.getValue())) {
             InvalidRoleIdResponseData responseData = new InvalidRoleIdResponseData();
             String errorMessage = messageSource.getMessage("error.role.invalid", null, Locale.getDefault());
             responseData.setRole(errorMessage);

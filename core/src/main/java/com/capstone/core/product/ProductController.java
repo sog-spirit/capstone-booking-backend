@@ -34,10 +34,9 @@ public class ProductController {
         return productService.createProduct(jwtToken, createCustomerServiceRequestData);
     }
 
-    @PutMapping
-    @Transactional
+    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     ResponseEntity<Object> editProduct(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestBody @Valid EditProductRequestData editProductRequestData) {
+            @ModelAttribute @Valid EditProductRequestData editProductRequestData) throws IOException {
         return productService.editProduct(jwtToken, editProductRequestData);
     }
 
