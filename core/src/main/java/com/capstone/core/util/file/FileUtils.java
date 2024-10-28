@@ -14,11 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 @PropertySource("classpath:env.properties")
 public class FileUtils {
     private static String ROOT_FILE_PATH;
-    public static final String PHOTO_FILE_EXTENSION = ".jpg";
     public static final String FOLDER_SEPERATOR = "\\";
 
-    public static void writeFile(MultipartFile multipartFile, Long fileId, String baseFolder) throws IOException {
-        File file = new File(getImageFilePath(fileId, baseFolder));
+    public static void writeFile(MultipartFile multipartFile, Long fileId, String baseFolder, String fileName) throws IOException {
+        File file = new File(getImageFilePath(fileId, baseFolder, fileName));
         file.getParentFile().mkdirs();
         file.createNewFile();
         try (OutputStream outputStream = new FileOutputStream(file, false)) {
@@ -26,22 +25,24 @@ public class FileUtils {
         }
     }
 
-    public static String getImageFilePath(Long fileId, String baseFolder) {
+    public static String getImageFilePath(Long fileId, String baseFolder, String fileName) {
         return new StringBuffer()
                 .append(ROOT_FILE_PATH)
                 .append(FOLDER_SEPERATOR)
-                .append(fileId)
+                .append(baseFolder)
                 .append(FOLDER_SEPERATOR)
                 .append(fileId)
-                .append(PHOTO_FILE_EXTENSION)
+                .append(FOLDER_SEPERATOR)
+                .append(fileName)
                 .toString();
     }
 
-    public static String getImageFilename(Long fileId) {
-        return new StringBuffer()
-                .append(fileId)
-                .append(PHOTO_FILE_EXTENSION)
-                .toString();
+    public static String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf(".");
+        if (dotIndex >= 0) {
+            return fileName.substring(dotIndex + 1);
+        }
+        return "";
     }
 
     public static String getRootFilePath() {

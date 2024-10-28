@@ -1,6 +1,7 @@
 package com.capstone.core.product;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ import com.capstone.core.table.UserTable;
 import com.capstone.core.util.consts.ProductImageType;
 import com.capstone.core.util.file.FileUtils;
 import com.capstone.core.util.security.jwt.JwtUtil;
+import com.capstone.core.util.time.TimeUtils;
 
 import lombok.AllArgsConstructor;
 
@@ -37,7 +39,8 @@ public class ProductService {
     private ProductImageRepository productImageRepository;
 
     @Transactional
-    ResponseEntity<Object> createProduct(String jwtToken, CreateProductRequestData createCustomerServiceRequestData) throws IOException {
+    ResponseEntity<Object> createProduct(String jwtToken, CreateProductRequestData createProductRequestData) throws IOException {
+        LocalDateTime currentLocalDateTime = LocalDateTime.now();
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -46,8 +49,8 @@ public class ProductService {
         }
 
         ProductTable newProduct = new ProductTable();
-        newProduct.setName(createCustomerServiceRequestData.getName());
-        newProduct.setPrice(createCustomerServiceRequestData.getPrice());
+        newProduct.setName(createProductRequestData.getName());
+        newProduct.setPrice(createProductRequestData.getPrice());
 
         UserTable user = new UserTable();
         user.setId(userId);
@@ -55,11 +58,15 @@ public class ProductService {
 
         ProductTable addedProduct = productRepository.save(newProduct);
 
+        String originalPhotoFileName = createProductRequestData.getPhoto().getOriginalFilename();
+        String photoFileExtension = FileUtils.getFileExtension(originalPhotoFileName);
+        String newPhotoFileName = userId + "_" + TimeUtils.getCurrentDateTimeString(currentLocalDateTime) + "." + photoFileExtension;
         ImageTable image = new ImageTable();
-        image.setFileName(FileUtils.getImageFilename(addedProduct.getId()));
-        image.setFilePath(FileUtils.getImageFilePath(addedProduct.getId(), BASE_FOLDER_NAME));
+        image.setFileName(newPhotoFileName);
+        image.setFilePath(FileUtils.getImageFilePath(addedProduct.getId(), BASE_FOLDER_NAME, newPhotoFileName));
         image.setAltText(BASE_FOLDER_NAME);
-        image.setContentType(FileUtils.PHOTO_FILE_EXTENSION);
+        image.setContentType(photoFileExtension);
+        image.setCreatedAt(currentLocalDateTime);
         ImageTable addImage = imageRepository.save(image);
 
         ProductImageTable productImage = new ProductImageTable();
@@ -69,7 +76,7 @@ public class ProductService {
         productImage.setImage(addImage);
         productImageRepository.save(productImage);
 
-        FileUtils.writeFile(createCustomerServiceRequestData.getPhoto(), addedProduct.getId(), BASE_FOLDER_NAME);
+        FileUtils.writeFile(createProductRequestData.getPhoto(), addedProduct.getId(), BASE_FOLDER_NAME, newPhotoFileName);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -102,7 +109,7 @@ public class ProductService {
         product.setPrice(editProductRequestData.getPrice());
         productRepository.save(product);
 
-        FileUtils.writeFile(editProductRequestData.getPhoto(), product.getId(), BASE_FOLDER_NAME);
+//        FileUtils.writeFile(editProductRequestData.getPhoto(), product.getId(), BASE_FOLDER_NAME);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
