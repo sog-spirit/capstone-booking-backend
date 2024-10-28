@@ -1,11 +1,13 @@
 package com.capstone.core.product;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.product.data.CreateProductRequestData;
@@ -14,6 +16,7 @@ import com.capstone.core.product.projection.ProductListDropdownProjection;
 import com.capstone.core.product.projection.ProductListProjection;
 import com.capstone.core.table.ProductTable;
 import com.capstone.core.table.UserTable;
+import com.capstone.core.util.file.FileUtils;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
 import lombok.AllArgsConstructor;
@@ -23,8 +26,10 @@ import lombok.AllArgsConstructor;
 public class ProductService {
 
     private ProductRepository productRepository;
+    private static final String BASE_FOLDER_NAME = "product";
 
-    ResponseEntity<Object> createProduct(String jwtToken, CreateProductRequestData createCustomerServiceRequestData) {
+    @Transactional
+    ResponseEntity<Object> createProduct(String jwtToken, CreateProductRequestData createCustomerServiceRequestData) throws IOException {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -37,7 +42,8 @@ public class ProductService {
         UserTable user = new UserTable();
         user.setId(userId);
         newProduct.setUser(user);
-        productRepository.save(newProduct);
+        ProductTable addedProduct = productRepository.save(newProduct);
+        FileUtils.writeFile(createCustomerServiceRequestData.getPhoto(), addedProduct.getId(), BASE_FOLDER_NAME);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

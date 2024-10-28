@@ -1,7 +1,11 @@
 package com.capstone.core.product;
 
+import java.io.IOException;
+
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,10 +28,9 @@ public class ProductController {
 
     private ProductService productService;
 
-    @PostMapping
-    @Transactional
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     ResponseEntity<Object> createProduct(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestBody @Valid CreateProductRequestData createCustomerServiceRequestData) {
+            @ModelAttribute @Valid CreateProductRequestData createCustomerServiceRequestData) throws IOException {
         return productService.createProduct(jwtToken, createCustomerServiceRequestData);
     }
 
