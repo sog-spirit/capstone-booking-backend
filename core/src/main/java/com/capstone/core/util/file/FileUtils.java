@@ -25,6 +25,14 @@ public class FileUtils {
         }
     }
 
+    public static void overwriteFile(MultipartFile multipartFile, Long fileId, String baseFolder, String fileName, String oldFilePath) throws IOException {
+        File oldFile = new File(oldFilePath);
+        if (!oldFile.delete()) {
+            throw new IOException("Unable to delete");
+        }
+        writeFile(multipartFile, fileId, baseFolder, fileName);
+    }
+
     public static String getImageFilePath(Long fileId, String baseFolder, String fileName) {
         return new StringBuffer()
                 .append(ROOT_FILE_PATH)
