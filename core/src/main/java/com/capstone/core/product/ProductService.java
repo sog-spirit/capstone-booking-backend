@@ -58,8 +58,8 @@ public class ProductService {
 
         ProductTable addedProduct = productRepository.save(newProduct);
 
-        String originalPhotoFileName = createProductRequestData.getPhoto().getOriginalFilename();
-        String photoFileExtension = FileUtils.getFileExtension(originalPhotoFileName);
+        String requestPhotoFileName = createProductRequestData.getPhoto().getOriginalFilename();
+        String photoFileExtension = FileUtils.getFileExtension(requestPhotoFileName);
         String newPhotoFileName = userId + "_" + TimeUtils.getCurrentDateTimeString(currentLocalDateTime) + "." + photoFileExtension;
         ImageTable image = new ImageTable();
         image.setFileName(newPhotoFileName);
@@ -94,6 +94,7 @@ public class ProductService {
 
     @Transactional
     ResponseEntity<Object> editProduct(String jwtToken, EditProductRequestData editProductRequestData) throws IOException {
+        LocalDateTime currentLocalDateTime = LocalDateTime.now();
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -109,7 +110,21 @@ public class ProductService {
         product.setPrice(editProductRequestData.getPrice());
         productRepository.save(product);
 
-//        FileUtils.writeFile(editProductRequestData.getPhoto(), product.getId(), BASE_FOLDER_NAME);
+        Optional<ProductImageTable> productImageQuery = productImageRepository.findByProductId(product.getId());
+        if (productImageQuery.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        ProductImageTable productImage = productImageQuery.get();
+        String oldPhotoFilePath = productImage.getImage().getFilePath();
+        String requestPhotoFileName = editProductRequestData.getPhoto().getOriginalFilename();
+        String photoFileExtension = FileUtils.getFileExtension(requestPhotoFileName);
+        String newPhotoFileName = userId + "_" + TimeUtils.getCurrentDateTimeString(currentLocalDateTime) + "." + photoFileExtension;
+        productImage.getImage().setFileName(newPhotoFileName);
+        productImage.getImage().setContentType(photoFileExtension);
+        productImage.getImage().setFilePath(FileUtils.getImageFilePath(product.getId(), BASE_FOLDER_NAME, newPhotoFileName));
+        FileUtils.overwriteFile(editProductRequestData.getPhoto(), product.getId(), BASE_FOLDER_NAME, newPhotoFileName, oldPhotoFilePath);
+        productImageRepository.save(productImage);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
