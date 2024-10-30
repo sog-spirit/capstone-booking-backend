@@ -14,6 +14,7 @@ import com.capstone.core.table.CenterTable;
 @Repository
 public interface CenterRepository extends JpaRepository<CenterTable, Long> {
     Page<CenterListProjection> findByUserId(Long id, Pageable pageable);
+    Page<CenterListProjection> findBy(Pageable pageable);
     List<CenterListDropdownProjection> findByUserId(Long id);
     List<CenterListDropdownProjection> findByNameContainingAndUserId(String name, Long id);
 }
