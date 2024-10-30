@@ -1,6 +1,7 @@
 package com.capstone.core.employeelist;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.employeelist.data.AddNewEmployeeRequestData;
+import com.capstone.core.employeelist.projection.EmployeeListProjection;
 import com.capstone.core.table.EmployeeListTable;
 import com.capstone.core.table.RoleTable;
 import com.capstone.core.table.UserRoleTable;
@@ -72,5 +74,17 @@ public class EmployeeListService {
         employeeListRepository.save(employeeList);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getEmployeeList(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<EmployeeListProjection> employeeList = employeeListRepository.findByCenterOwnerId(userId);
+        return new ResponseEntity<>(employeeList, HttpStatus.OK);
     }
 }
