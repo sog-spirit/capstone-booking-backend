@@ -10,5 +10,6 @@ import com.capstone.core.table.CourtTable;
 
 @Repository
 public interface CourtRepository extends JpaRepository<CourtTable, Long> {
+    List<CourtListProjection> findByCenterIdAndUserId(Long centerId, Long userId);
     List<CourtListProjection> findByCenterId(Long centerId);
 }

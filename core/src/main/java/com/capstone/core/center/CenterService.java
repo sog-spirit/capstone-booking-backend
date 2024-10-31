@@ -18,7 +18,6 @@ import com.capstone.core.center.projection.CenterListDropdownProjection;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.UserTable;
-import com.capstone.core.user.UserRepository;
 import com.capstone.core.userrole.UserRoleRepository;
 import com.capstone.core.userrole.projection.UserRoleProjection;
 import com.capstone.core.util.consts.UserRole;
