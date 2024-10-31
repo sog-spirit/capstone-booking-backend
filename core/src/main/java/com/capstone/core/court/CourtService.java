@@ -63,6 +63,11 @@ public class CourtService {
         }
     }
 
+    ResponseEntity<Object> getCourtList(String jwtToken, Long centerId, String query) {
+        List<CourtListProjection> courtList = courtRepository.findByCenterIdAndNameContaining(centerId, query);
+        return new ResponseEntity<>(courtList, HttpStatus.OK);
+    }
+
     ResponseEntity<Object> editCourt(String jwtToken, EditCourtRequestData editCourtRequestData) {
         Long userId;
         try {

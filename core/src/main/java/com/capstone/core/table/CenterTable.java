@@ -1,5 +1,7 @@
 package com.capstone.core.table;
 
+import java.time.LocalTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,4 +24,7 @@ public class CenterTable {
     @JoinColumn(name = "owner")
     private UserTable user;
     private Long fieldQuantity;
+    private Long courtFee;
+    private LocalTime openingTime;
+    private LocalTime closingTime;
 }
