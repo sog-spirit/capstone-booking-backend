@@ -1,6 +1,7 @@
 package com.capstone.core.courtbooking;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.courtbooking.data.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.CourtBookingTable;
 import com.capstone.core.table.CourtTable;
@@ -52,5 +54,10 @@ public class CourtBookingService {
         courtBooking.setCreateTimestamp(LocalDateTime.now());
         courtBookingRepository.save(courtBooking);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCourtBookingList(String jwtToken, Long centerId, Long courtId) {
+        List<CourtBookingListProjection> courtBookingList = courtBookingRepository.findByCenterIdAndCourtId(centerId, courtId);
+        return new ResponseEntity<>(courtBookingList, HttpStatus.OK);
     }
 }
