@@ -21,7 +21,7 @@ import com.capstone.core.user.data.LoginFormRequestData;
 import com.capstone.core.user.data.RegisterFormRequestData;
 import com.capstone.core.user.projection.ValidateUserProjection;
 import com.capstone.core.userrole.UserRoleRepository;
-import com.capstone.core.userrole.projection.RoleNameProjection;
+import com.capstone.core.userrole.projection.UserRoleProjection;
 import com.capstone.core.util.consts.MessageConstsUtil;
 import com.capstone.core.util.consts.UserRole;
 import com.capstone.core.util.security.jwt.JwtUtil;
@@ -81,11 +81,11 @@ public class UserService {
         ValidateUserProjection userData = userRepository.findByUsername(loginFormData.getUsername());
         String accessToken = JwtUtil.createAccessToken(userData.getId());
         String refreshToken = JwtUtil.createRefreshToken(userData.getId());
-        RoleNameProjection roleName = userRoleRepository.findByUserId(userData.getId());
+        UserRoleProjection userRole = userRoleRepository.findByUserId(userData.getId());
         JwtTokenResponseData responseData = new JwtTokenResponseData();
         responseData.setAccessToken(accessToken);
         responseData.setRefreshToken(refreshToken);
-        responseData.setRole(roleName.getRoleName());
+        responseData.setRole(userRole.getRoleName());
 
         return new ResponseEntity<>(responseData, HttpStatus.OK);
     }

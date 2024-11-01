@@ -37,6 +37,12 @@ public class CourtController {
         return courtService.getCourtList(jwtToken, centerId);
     }
 
+    @GetMapping(value = "/list")
+    ResponseEntity<Object> getCourtList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestParam Long centerId, @RequestParam String query) {
+        return courtService.getCourtList(jwtToken, centerId, query);
+    }
+
     @PutMapping
     @Transactional
     public ResponseEntity<Object> editCourt(@RequestHeader(name = "Authorization", required = true) String jwtToken,

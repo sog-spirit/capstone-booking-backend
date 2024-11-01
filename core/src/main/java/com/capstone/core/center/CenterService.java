@@ -18,6 +18,9 @@ import com.capstone.core.center.projection.CenterListDropdownProjection;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.UserTable;
+import com.capstone.core.userrole.UserRoleRepository;
+import com.capstone.core.userrole.projection.UserRoleProjection;
+import com.capstone.core.util.consts.UserRole;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
 import lombok.AllArgsConstructor;
@@ -28,6 +31,7 @@ public class CenterService {
     private static final Long DEFAULT_FIELD_QUANTITY = (long) 0;
 
     private CenterRepository centerRepository;
+    private UserRoleRepository userRoleRepository;
 
     ResponseEntity<Object> addNewCenter(String jwtToken, AddNewCenterRequestData requestData) {
         Long userId;
@@ -72,12 +76,22 @@ public class CenterService {
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        Pageable pageable = PageRequest.of(pageNo, pageSize);
-        Page<CenterListProjection> centerPagedResult = centerRepository.findByUserId(userId, pageable);
-        CenterListResponseData responseData = new CenterListResponseData();
-        responseData.setTotalPage(centerPagedResult.getTotalPages());
-        responseData.setCenterList(centerPagedResult.getContent());
-        return new ResponseEntity<>(responseData, HttpStatus.OK);
+        UserRoleProjection userRole = userRoleRepository.findByUserId(userId);
+        if (userRole.getRoleId() == UserRole.CENTER_OWNER.getValue()) {
+            Pageable pageable = PageRequest.of(pageNo, pageSize);
+            Page<CenterListProjection> centerPagedResult = centerRepository.findByUserId(userId, pageable);
+            CenterListResponseData responseData = new CenterListResponseData();
+            responseData.setTotalPage(centerPagedResult.getTotalPages());
+            responseData.setCenterList(centerPagedResult.getContent());
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
+        } else {
+            Pageable pageable = PageRequest.of(pageNo, pageSize);
+            Page<CenterListProjection> centerPagedResult = centerRepository.findBy(pageable);
+            CenterListResponseData responseData = new CenterListResponseData();
+            responseData.setTotalPage(centerPagedResult.getTotalPages());
+            responseData.setCenterList(centerPagedResult.getContent());
+            return new ResponseEntity<>(responseData, HttpStatus.OK);
+        }
     }
 
     ResponseEntity<Object> getCenterList(String jwtToken) {

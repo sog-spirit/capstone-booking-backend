@@ -14,6 +14,9 @@ import com.capstone.core.court.projection.CourtListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.CourtTable;
 import com.capstone.core.table.UserTable;
+import com.capstone.core.userrole.UserRoleRepository;
+import com.capstone.core.userrole.projection.UserRoleProjection;
+import com.capstone.core.util.consts.UserRole;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
 import lombok.AllArgsConstructor;
@@ -22,6 +25,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CourtService {
     private CourtRepository courtRepository;
+    private UserRoleRepository userRoleRepository;
 
     ResponseEntity<Object> addNewCourt(String jwtToken, AddNewCourtRequestData addNewCourtRequestData) {
         Long userId;
@@ -49,7 +53,18 @@ public class CourtService {
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<CourtListProjection> courtList = courtRepository.findByCenterId(centerId);
+        UserRoleProjection userRole= userRoleRepository.findByUserId(userId);
+        if (userRole.getRoleId() == UserRole.CENTER_OWNER.getValue()) {
+            List<CourtListProjection> courtList = courtRepository.findByCenterIdAndUserId(centerId, userId);
+            return new ResponseEntity<>(courtList, HttpStatus.OK);
+        } else {
+            List<CourtListProjection> courtList = courtRepository.findByCenterId(centerId);
+            return new ResponseEntity<>(courtList, HttpStatus.OK);
+        }
+    }
+
+    ResponseEntity<Object> getCourtList(String jwtToken, Long centerId, String query) {
+        List<CourtListProjection> courtList = courtRepository.findByCenterIdAndNameContaining(centerId, query);
         return new ResponseEntity<>(courtList, HttpStatus.OK);
     }
 
