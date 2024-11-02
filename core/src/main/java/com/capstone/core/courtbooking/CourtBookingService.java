@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.courtbooking.data.AddNewCourtBookingRequestData;
 import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
+import com.capstone.core.courtbooking.projection.UserCourtBookingListProjection;
+import com.capstone.core.table.BookingOrderStatusTable;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.CourtBookingTable;
 import com.capstone.core.table.CourtTable;
@@ -50,7 +52,9 @@ public class CourtBookingService {
         courtBooking.setUsageDate(addNewCourtBookingRequestData.getUsageDate());
         courtBooking.setUsageTimeStart(addNewCourtBookingRequestData.getUsageTimeStart());
         courtBooking.setUsageTimeEnd(addNewCourtBookingRequestData.getUsageTimeEnd());
-        courtBooking.setStatus(BookingOrderStatus.PENDING.getValue());
+        BookingOrderStatusTable bookingOrderStatus = new BookingOrderStatusTable();
+        bookingOrderStatus.setId(BookingOrderStatus.PENDING.getValue());
+        courtBooking.setStatus(bookingOrderStatus);
         courtBooking.setCreateTimestamp(LocalDateTime.now());
         courtBookingRepository.save(courtBooking);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -59,5 +63,16 @@ public class CourtBookingService {
     ResponseEntity<Object> getCourtBookingList(String jwtToken, Long centerId, Long courtId) {
         List<CourtBookingListProjection> courtBookingList = courtBookingRepository.findByCenterIdAndCourtId(centerId, courtId);
         return new ResponseEntity<>(courtBookingList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getUserCourtBookingList(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<UserCourtBookingListProjection> userCourtBookingList = courtBookingRepository.findByUserId(userId);
+        return new ResponseEntity<>(userCourtBookingList, HttpStatus.OK);
     }
 }
