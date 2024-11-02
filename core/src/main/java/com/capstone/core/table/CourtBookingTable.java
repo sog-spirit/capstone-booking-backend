@@ -33,5 +33,7 @@ public class CourtBookingTable {
     private LocalDate usageDate;
     private LocalTime usageTimeStart;
     private LocalTime usageTimeEnd;
-    private Long status;
+    @ManyToOne
+    @JoinColumn(name = "status")
+    private BookingOrderStatusTable status;
 }
