@@ -44,4 +44,11 @@ public class CourtBookingController {
     ResponseEntity<Object> getCenterOwnerCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return courtBookingService.getCenterOwnerCourtBookingList(jwtToken);
     }
+
+    @GetMapping
+    @RequestMapping("/list/user-order/center-list")
+    ResponseEntity<Object> getCenterListFromUserOrder(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestParam String query) {
+        return courtBookingService.getCenterListFromUserOrder(jwtToken, query);
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.courtbooking.data.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.projection.CenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingListProjection;
@@ -86,5 +87,16 @@ public class CourtBookingService {
         }
         List<CenterOwnerCourtBookingListProjection> centerOwnerCourtBookingList = courtBookingRepository.findByCenterUserId(userId);
         return new ResponseEntity<>(centerOwnerCourtBookingList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterListFromUserOrder(String jwtToken, String query) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<CenterListProjection> centerList = courtBookingRepository.findCenterListByUserIdAndCenterNameContaining(userId, query);
+        return new ResponseEntity<>(centerList, HttpStatus.OK);
     }
 }
