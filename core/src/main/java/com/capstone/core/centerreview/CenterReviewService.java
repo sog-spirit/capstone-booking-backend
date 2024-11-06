@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.centerreview.data.AddNewCenterReviewRequestData;
+import com.capstone.core.centerreview.projection.CenterOwnerReviewListProjection;
 import com.capstone.core.centerreview.projection.UserCenterReviewListProjection;
 import com.capstone.core.table.CenterReviewTable;
 import com.capstone.core.table.CenterTable;
@@ -55,5 +56,16 @@ public class CenterReviewService {
         }
         List<UserCenterReviewListProjection> userCenterReviewList = centerReviewRepository.findUserCenterReviewListByUserId(userId);
         return new ResponseEntity<>(userCenterReviewList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerReviewList(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        List<CenterOwnerReviewListProjection> centerOwnerReviewList = centerReviewRepository.findCenterOwnerReviewListByUserId(userId);
+        return new ResponseEntity<>(centerOwnerReviewList, HttpStatus.OK);
     }
 }

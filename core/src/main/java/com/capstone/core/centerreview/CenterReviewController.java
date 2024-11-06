@@ -25,9 +25,13 @@ public class CenterReviewController {
         return centerReviewService.addNewCenterReview(jwtToken, addNewCenterReviewRequestData);
     }
 
-    @GetMapping
-    @RequestMapping("/list/user")
+    @GetMapping(value = "/list/user")
     ResponseEntity<Object> getUserCenterReviewList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return centerReviewService.getUserCenterReviewList(jwtToken);
+    }
+
+    @GetMapping(value = "/list/center-owner")
+    ResponseEntity<Object> getCenterOwnerReviewList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
+        return centerReviewService.getCenterOwnerReviewList(jwtToken);
     }
 }
