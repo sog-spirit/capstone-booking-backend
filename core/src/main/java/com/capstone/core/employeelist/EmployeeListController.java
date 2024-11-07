@@ -26,8 +26,7 @@ public class EmployeeListController {
         return employeeListService.addNewEmployee(jwtToken, addNewEmployeeRequestData);
     }
 
-    @GetMapping
-    @RequestMapping("/list")
+    @GetMapping(value = "/list")
     ResponseEntity<Object> getEmployeeList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return employeeListService.getEmployeeList(jwtToken);
     }

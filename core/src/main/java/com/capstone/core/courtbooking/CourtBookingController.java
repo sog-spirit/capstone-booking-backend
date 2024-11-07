@@ -26,22 +26,25 @@ public class CourtBookingController {
         return courtBookingService.addNewCourtBooking(jwtToken, addNewCourtBookingRequestData);
     }
 
-    @GetMapping
-    @RequestMapping("/list")
+    @GetMapping(value = "/list")
     ResponseEntity<Object> getCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             @RequestParam Long centerId, @RequestParam Long courtId) {
         return courtBookingService.getCourtBookingList(jwtToken, centerId, courtId);
     }
 
-    @GetMapping
-    @RequestMapping("/list/user-order")
+    @GetMapping(value = "/list/user-order")
     ResponseEntity<Object> getUserCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return courtBookingService.getUserCourtBookingList(jwtToken);
     }
 
-    @GetMapping
-    @RequestMapping("/list/center-owner")
+    @GetMapping(value = "/list/center-owner")
     ResponseEntity<Object> getCenterOwnerCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return courtBookingService.getCenterOwnerCourtBookingList(jwtToken);
+    }
+
+    @GetMapping(value = "/list/user-order/center-list")
+    ResponseEntity<Object> getCenterListFromUserOrder(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestParam String query) {
+        return courtBookingService.getCenterListFromUserOrder(jwtToken, query);
     }
 }
