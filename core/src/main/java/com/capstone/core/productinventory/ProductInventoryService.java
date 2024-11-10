@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.productinventory.data.AddNewProductInventoryRequestData;
 import com.capstone.core.productinventory.projection.ProductInventoryListProjection;
+import com.capstone.core.productinventory.projection.UserProductOrderPageListProjection;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.ProductInventoryTable;
 import com.capstone.core.table.ProductTable;
@@ -59,5 +60,17 @@ public class ProductInventoryService {
 
         List<ProductInventoryListProjection> productInventoryList = productInventoryRepository.findByUserId(userId);
         return new ResponseEntity<>(productInventoryList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getUserProductInventoryList(String jwtToken, Long centerId) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<UserProductOrderPageListProjection> productList = productInventoryRepository.findUserProductOrderPageListByCenterId(centerId);
+        return new ResponseEntity<>(productList, HttpStatus.OK); 
     }
 }

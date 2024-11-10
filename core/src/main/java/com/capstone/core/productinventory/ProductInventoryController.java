@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.productinventory.data.AddNewProductInventoryRequestData;
@@ -30,5 +31,11 @@ public class ProductInventoryController {
     @GetMapping(value = "/list")
     ResponseEntity<Object> getProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return productInventoryService.getProductInventoryList(jwtToken);
+    }
+
+    @GetMapping(value = "/list", params = {"centerId"})
+    ResponseEntity<Object> getUserProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestParam Long centerId) {
+        return productInventoryService.getUserProductInventoryList(jwtToken, centerId);
     }
 }
