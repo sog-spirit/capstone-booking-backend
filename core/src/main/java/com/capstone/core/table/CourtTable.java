@@ -1,5 +1,6 @@
 package com.capstone.core.table;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,11 +17,12 @@ public class CourtTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "\"name\"")
     private String name;
-    @ManyToOne
-    @JoinColumn(name = "center_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "center_id", nullable = false)
     private CenterTable center;
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
     private UserTable user;
 }

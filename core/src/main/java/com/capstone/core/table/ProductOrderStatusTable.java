@@ -9,9 +9,9 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "role", schema = "public")
+@Table(name = "product_order_status", schema = "public")
 @Data
-public class RoleTable {
+public class ProductOrderStatusTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -10,16 +10,17 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "user_role", schema = "public")
+@Table(name = "product_order_item", schema = "public")
 @Data
-public class UserRoleTable {
+public class ProductOrderItemTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserTable user;
+    @JoinColumn(name = "order_id", nullable = false)
+    private ProductOrderTable order;
     @ManyToOne(optional = false)
-    @JoinColumn(name = "role_id", nullable = false)
-    private RoleTable role;
+    @JoinColumn(name = "product_inventory_id", nullable = false)
+    private ProductInventoryTable productInventory;
+    private Long quantity;
 }

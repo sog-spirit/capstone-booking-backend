@@ -17,13 +17,13 @@ public class ProductInventoryTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long quantity;
-    @ManyToOne
-    @JoinColumn(name = "center_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "center_id", nullable = false)
     private CenterTable center;
-    @ManyToOne
-    @JoinColumn(name = "product_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private ProductTable product;
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserTable user;
 }
