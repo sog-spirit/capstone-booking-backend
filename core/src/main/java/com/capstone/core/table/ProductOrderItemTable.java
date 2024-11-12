@@ -20,7 +20,7 @@ public class ProductOrderItemTable {
     @JoinColumn(name = "order_id", nullable = false)
     private ProductOrderTable order;
     @ManyToOne(optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private ProductTable product;
+    @JoinColumn(name = "product_inventory_id", nullable = false)
+    private ProductInventoryTable productInventory;
     private Long quantity;
 }

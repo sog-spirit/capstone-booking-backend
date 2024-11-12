@@ -10,15 +10,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.capstone.core.productinventory.ProductInventoryRepository;
 import com.capstone.core.productorder.data.ProductOrderRequestData;
 import com.capstone.core.productorder.data.ProductOrderRequestData.CartItem;
 import com.capstone.core.productorder.projection.CenterOwnerProductOrderListProjection;
 import com.capstone.core.productorderitem.ProductOrderItemRepository;
 import com.capstone.core.table.CenterTable;
+import com.capstone.core.table.ProductInventoryTable;
 import com.capstone.core.table.ProductOrderItemTable;
 import com.capstone.core.table.ProductOrderStatusTable;
 import com.capstone.core.table.ProductOrderTable;
-import com.capstone.core.table.ProductTable;
 import com.capstone.core.table.UserTable;
 import com.capstone.core.util.consts.ProductOrderStatus;
 import com.capstone.core.util.security.jwt.JwtUtil;
@@ -30,6 +31,7 @@ import lombok.AllArgsConstructor;
 public class ProductOrderService {
     private final ProductOrderRepository productOrderRepository;
     private final ProductOrderItemRepository productOrderItemRepository;
+    private final ProductInventoryRepository productInventoryRepository;
 
     @Transactional
     ResponseEntity<Object> addNewProductOrder(String jwtToken, ProductOrderRequestData productOrderRequestData) {
@@ -58,18 +60,22 @@ public class ProductOrderService {
 
         ProductOrderTable savedProductOrder = productOrderRepository.save(productOrder);
         List<ProductOrderItemTable> productOrderItems = new ArrayList<>();
+        List<ProductInventoryTable> productInventoryItems = new ArrayList<>();
         ProductOrderItemTable productOrderItem;
-        ProductTable product;
+        ProductInventoryTable productInventoryItem;
         for (CartItem cartItem : productOrderRequestData.getCart()) {
+            productInventoryItem = productInventoryRepository.getReferenceById(cartItem.getProductInventoryId());
+            productInventoryItem.setQuantity(productInventoryItem.getQuantity() - cartItem.getQuantity());
+            productInventoryItems.add(productInventoryItem);
+
             productOrderItem = new ProductOrderItemTable();
             productOrderItem.setOrder(savedProductOrder);
-            product = new ProductTable();
-            product.setId(cartItem.getProductId());
-            productOrderItem.setProduct(product);
+            productOrderItem.setProductInventory(productInventoryItem);
             productOrderItem.setQuantity(cartItem.getQuantity());
             productOrderItems.add(productOrderItem);
         }
         productOrderItemRepository.saveAll(productOrderItems);
+        productInventoryRepository.saveAll(productInventoryItems);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

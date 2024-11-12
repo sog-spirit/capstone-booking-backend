@@ -16,7 +16,7 @@ public class ProductOrderRequestData {
 
     @Data
     public static class CartItem {
-        private Long productId;
+        private Long productInventoryId;
         private Long quantity;
     }
 }
