@@ -1,5 +1,6 @@
 package com.capstone.core.table;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,12 +17,13 @@ public class ProductImageTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
-    @JoinColumn(name = "product_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private ProductTable product;
-    @ManyToOne
-    @JoinColumn(name = "image_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "image_id", nullable = false)
     private ImageTable image;
+    @Column(name = "\"type\"")
     private Long type;
     private Long displayOrder;
 }

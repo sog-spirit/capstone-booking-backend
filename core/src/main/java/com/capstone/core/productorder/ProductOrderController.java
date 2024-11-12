@@ -1,6 +1,7 @@
 package com.capstone.core.productorder;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,5 +23,10 @@ public class ProductOrderController {
     ResponseEntity<Object> addNewProductOrder(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             @RequestBody @Valid ProductOrderRequestData productOrderRequestData) {
         return productOrderService.addNewProductOrder(jwtToken, productOrderRequestData);
+    }
+
+    @GetMapping(value = "/list/center-owner")
+    ResponseEntity<Object> getCenterOwnerProductOrderList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
+        return productOrderService.getCenterOwnerProductOrderList(jwtToken);
     }
 }

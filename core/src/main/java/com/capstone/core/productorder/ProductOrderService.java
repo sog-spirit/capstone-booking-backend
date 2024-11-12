@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.productorder.data.ProductOrderRequestData;
 import com.capstone.core.productorder.data.ProductOrderRequestData.CartItem;
+import com.capstone.core.productorder.projection.CenterOwnerProductOrderListProjection;
 import com.capstone.core.productorderitem.ProductOrderItemRepository;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.ProductOrderItemTable;
@@ -27,8 +28,8 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class ProductOrderService {
-    private ProductOrderRepository productOrderRepository;
-    private ProductOrderItemRepository productOrderItemRepository;
+    private final ProductOrderRepository productOrderRepository;
+    private final ProductOrderItemRepository productOrderItemRepository;
 
     @Transactional
     ResponseEntity<Object> addNewProductOrder(String jwtToken, ProductOrderRequestData productOrderRequestData) {
@@ -71,5 +72,17 @@ public class ProductOrderService {
         productOrderItemRepository.saveAll(productOrderItems);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductOrderList(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<CenterOwnerProductOrderListProjection> productOrderList = productOrderRepository.findCenterOwnerProductOrderListByUserId(userId);
+        return new ResponseEntity<>(productOrderList, HttpStatus.OK);
     }
 }

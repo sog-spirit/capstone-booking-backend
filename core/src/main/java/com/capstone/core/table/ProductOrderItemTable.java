@@ -16,11 +16,11 @@ public class ProductOrderItemTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
-    @JoinColumn(name = "order_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
     private ProductOrderTable order;
-    @ManyToOne
-    @JoinColumn(name = "product_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private ProductTable product;
     private Long quantity;
 }
