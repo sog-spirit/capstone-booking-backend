@@ -11,4 +11,5 @@ public class JwtTokenResponseData {
     private String accessToken;
     private String refreshToken;
     private String role;
+    private String username;
 }

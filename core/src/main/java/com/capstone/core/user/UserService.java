@@ -86,6 +86,7 @@ public class UserService {
         responseData.setAccessToken(accessToken);
         responseData.setRefreshToken(refreshToken);
         responseData.setRole(userRole.getRoleName());
+        responseData.setUsername(loginFormData.getUsername());
 
         return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
