@@ -1,6 +1,6 @@
 package com.capstone.core.productinventory.projection;
 
-public interface ProductInventoryListProjection {
+public interface CenterOwnerProductInventoryListProjection {
     Long getId();
     Long getQuantity();
     Center getCenter();

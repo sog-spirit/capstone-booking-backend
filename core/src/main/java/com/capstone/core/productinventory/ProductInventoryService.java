@@ -1,21 +1,33 @@
 package com.capstone.core.productinventory;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.productinventory.data.AddNewProductInventoryRequestData;
-import com.capstone.core.productinventory.projection.ProductInventoryListProjection;
+import com.capstone.core.productinventory.data.CenterOwnerProductInventoryManagementRequestData;
+import com.capstone.core.productinventory.data.CenterOwnerProductInventoryManagementResponseData;
+import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryListProjection;
 import com.capstone.core.productinventory.projection.UserProductOrderPageListProjection;
+import com.capstone.core.productinventory.specification.ProductInventorySpecification;
+import com.capstone.core.productinventory.specification.criteria.ProductInventoryFilterCriteria;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.ProductInventoryTable;
 import com.capstone.core.table.ProductTable;
 import com.capstone.core.table.UserTable;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Order;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -58,7 +70,7 @@ public class ProductInventoryService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<ProductInventoryListProjection> productInventoryList = productInventoryRepository.findByUserId(userId);
+        List<CenterOwnerProductInventoryListProjection> productInventoryList = productInventoryRepository.findByUserId(userId);
         return new ResponseEntity<>(productInventoryList, HttpStatus.OK);
     }
 
@@ -72,5 +84,43 @@ public class ProductInventoryService {
 
         List<UserProductOrderPageListProjection> productList = productInventoryRepository.findUserProductOrderPageListByCenterId(centerId);
         return new ResponseEntity<>(productList, HttpStatus.OK); 
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductInventoryList(String jwtToken, CenterOwnerProductInventoryManagementRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        ProductInventoryFilterCriteria filterCriteria = new ProductInventoryFilterCriteria();
+        filterCriteria.setUserId(userId);
+        filterCriteria.setCenterId(requestData.getCenterIdFilter() != null ? Long.parseLong(requestData.getCenterIdFilter()) : null);
+        filterCriteria.setProductId(requestData.getProductIdFilter() != null ? Long.parseLong(requestData.getProductIdFilter()) : null);
+
+        List<Sort.Order> sortOrders = new ArrayList<>();
+        if (requestData.getIdSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getIdSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "id"));
+        }
+        if (requestData.getProductSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getProductSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "product"));
+        }
+        if (requestData.getCenterSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getCenterSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "center"));
+        }
+        if (requestData.getQuantitySortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getQuantitySortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "quantity"));
+        }
+        Sort sort = Sort.by(sortOrders);
+
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
+
+        CenterOwnerProductInventoryManagementResponseData responseData = new CenterOwnerProductInventoryManagementResponseData();
+        Page<CenterOwnerProductInventoryListProjection> productInventoryList = productInventoryRepository.findBy(new ProductInventorySpecification(filterCriteria), q -> q.as(CenterOwnerProductInventoryListProjection.class).sortBy(pageable.getSort()).page(pageable));
+        responseData.setProductInventoryList(productInventoryList.getContent());
+        responseData.setTotalPage(productInventoryList.getTotalPages());
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 }
