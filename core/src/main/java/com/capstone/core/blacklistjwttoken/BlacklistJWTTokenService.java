@@ -40,7 +40,9 @@ public class BlacklistJWTTokenService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         Long userId = JwtUtil.getUserIdFromToken(refreshTokenData.getRefreshToken());
-        AccessTokenResponseData responseData = new AccessTokenResponseData(JwtUtil.createAccessToken(userId));
+        AccessTokenResponseData responseData = new AccessTokenResponseData();
+        responseData.setAccessToken(JwtUtil.createAccessToken(userId));
+        responseData.setRefreshToken(JwtUtil.createRefreshToken(userId));
         return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 
