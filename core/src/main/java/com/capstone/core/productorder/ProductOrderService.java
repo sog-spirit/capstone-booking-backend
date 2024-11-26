@@ -4,16 +4,22 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.productinventory.ProductInventoryRepository;
-import com.capstone.core.productorder.data.ProductOrderRequestData;
-import com.capstone.core.productorder.data.ProductOrderRequestData.CartItem;
+import com.capstone.core.productorder.data.request.CenterOwnerProductOrderListRequestData;
+import com.capstone.core.productorder.data.request.ProductOrderRequestData;
+import com.capstone.core.productorder.data.request.ProductOrderRequestData.CartItem;
 import com.capstone.core.productorder.projection.CenterOwnerProductOrderListProjection;
+import com.capstone.core.productorder.specification.ProductOrderSpecification;
+import com.capstone.core.productorder.specification.criteria.ProductOrderCriteria;
 import com.capstone.core.productorderitem.ProductOrderItemRepository;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.ProductInventoryTable;
@@ -33,7 +39,6 @@ public class ProductOrderService {
     private final ProductOrderItemRepository productOrderItemRepository;
     private final ProductInventoryRepository productInventoryRepository;
 
-    @Transactional
     ResponseEntity<Object> addNewProductOrder(String jwtToken, ProductOrderRequestData productOrderRequestData) {
         LocalDateTime currentDateTime = LocalDateTime.now();
         Long userId;
@@ -80,7 +85,7 @@ public class ProductOrderService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCenterOwnerProductOrderList(String jwtToken) {
+    ResponseEntity<Object> getCenterOwnerProductOrderList(String jwtToken, CenterOwnerProductOrderListRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -88,7 +93,17 @@ public class ProductOrderService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CenterOwnerProductOrderListProjection> productOrderList = productOrderRepository.findCenterOwnerProductOrderListByUserId(userId);
-        return new ResponseEntity<>(productOrderList, HttpStatus.OK);
+        ProductOrderCriteria productOrderCriteria = new ProductOrderCriteria();
+        productOrderCriteria.setCenterUserId(userId);
+
+        List<Sort.Order> sortOrders = new ArrayList<>();
+
+        Sort sort = Sort.by(sortOrders);
+
+        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+
+        Page<CenterOwnerProductOrderListProjection> productOrderList = productOrderRepository.findBy(new ProductOrderSpecification(productOrderCriteria), q -> q.as(CenterOwnerProductOrderListProjection.class).sortBy(pageable.getSort()).page(pageable));
+
+        return new ResponseEntity<>(productOrderList.getContent(), HttpStatus.OK);
     }
 }

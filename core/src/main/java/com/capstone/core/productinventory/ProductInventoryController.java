@@ -1,6 +1,7 @@
 package com.capstone.core.productinventory;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.capstone.core.productinventory.data.AddNewProductInventoryRequestData;
-import com.capstone.core.productinventory.data.CenterOwnerProductInventoryManagementRequestData;
+import com.capstone.core.productinventory.data.request.AddNewProductInventoryRequestData;
+import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryManagementRequestData;
+import com.capstone.core.productinventory.data.request.UserProductInventoryListRequestData;
 import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryListProjection;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -30,18 +31,13 @@ public class ProductInventoryController {
         return productInventoryService.addProductInventory(jwtToken, addNewProductInventoryRequestData);
     }
 
-//    @GetMapping(value = "/list")
-//    ResponseEntity<Object> getProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
-//        return productInventoryService.getProductInventoryList(jwtToken);
-//    }
-//
-//    @GetMapping(value = "/list", params = {"centerId"})
-//    ResponseEntity<Object> getUserProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-//            @RequestParam Long centerId) {
-//        return productInventoryService.getUserProductInventoryList(jwtToken, centerId);
-//    }
+    @GetMapping(value = "/user/list")
+    ResponseEntity<Object> getUserProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserProductInventoryListRequestData requestData) {
+        return productInventoryService.getUserProductInventoryList(jwtToken, requestData);
+    }
 
-    @GetMapping(value = "/list")
+    @GetMapping(value = "/center-owner/list")
     ResponseEntity<Object> getCenterOwnerProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             CenterOwnerProductInventoryManagementRequestData requestData) {
         return productInventoryService.getCenterOwnerProductInventoryList(jwtToken, requestData);

@@ -1,21 +1,31 @@
 package com.capstone.core.center;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.capstone.core.center.data.AddNewCenterRequestData;
-import com.capstone.core.center.data.CenterListResponseData;
-import com.capstone.core.center.data.EditCenterRequestData;
-import com.capstone.core.center.projection.CenterListDropdownProjection;
+import com.capstone.core.center.data.request.AddNewCenterRequestData;
+import com.capstone.core.center.data.request.CenterOwnerCenterDropdownRequestData;
+import com.capstone.core.center.data.request.CenterOwnerCenterListRequestData;
+import com.capstone.core.center.data.request.EditCenterRequestData;
+import com.capstone.core.center.data.request.UserCenterListRequestData;
+import com.capstone.core.center.data.response.CenterOwnerCenterListResposneData;
+import com.capstone.core.center.data.response.UserCenterListResponseData;
+import com.capstone.core.center.projection.CenterOwnerCenterListDropdownProjection;
 import com.capstone.core.center.projection.CenterListProjection;
+import com.capstone.core.center.projection.CenterOwnerCenterListProjection;
+import com.capstone.core.center.projection.UserCenterListProjection;
+import com.capstone.core.center.specification.CenterSpecification;
+import com.capstone.core.center.specification.criteria.CenterFilterCriteria;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.UserTable;
 import com.capstone.core.userrole.UserRoleRepository;
@@ -69,50 +79,57 @@ public class CenterService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCenterList(String jwtToken, Integer pageNo, Integer pageSize) {
+    ResponseEntity<Object> getUserCenterList(String jwtToken, UserCenterListRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        UserRoleProjection userRole = userRoleRepository.findByUserId(userId);
-        if (userRole.getRoleId() == UserRole.CENTER_OWNER.getValue()) {
-            Pageable pageable = PageRequest.of(pageNo, pageSize);
-            Page<CenterListProjection> centerPagedResult = centerRepository.findByUserId(userId, pageable);
-            CenterListResponseData responseData = new CenterListResponseData();
-            responseData.setTotalPage(centerPagedResult.getTotalPages());
-            responseData.setCenterList(centerPagedResult.getContent());
-            return new ResponseEntity<>(responseData, HttpStatus.OK);
-        } else {
-            Pageable pageable = PageRequest.of(pageNo, pageSize);
-            Page<CenterListProjection> centerPagedResult = centerRepository.findBy(pageable);
-            CenterListResponseData responseData = new CenterListResponseData();
-            responseData.setTotalPage(centerPagedResult.getTotalPages());
-            responseData.setCenterList(centerPagedResult.getContent());
-            return new ResponseEntity<>(responseData, HttpStatus.OK);
-        }
+
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize());
+        Page<UserCenterListProjection> centerPagedResult = centerRepository.findUserCenterListBy(pageable);
+        UserCenterListResponseData responseData = new UserCenterListResponseData();
+        responseData.setTotalPage(centerPagedResult.getTotalPages());
+        responseData.setCenterList(centerPagedResult.getContent());
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCenterList(String jwtToken) {
+    ResponseEntity<Object> getCenterOwnerCenterDropdownList(String jwtToken, CenterOwnerCenterDropdownRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<CenterListDropdownProjection> centerListResult = centerRepository.findByUserId(userId);
+
+        List<CenterOwnerCenterListDropdownProjection> centerListResult = centerRepository.findByNameContainingAndUserId(requestData.getQuery(), userId);
         return new ResponseEntity<>(centerListResult, HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCenterDropdownList(String jwtToken, String query) {
+    ResponseEntity<Object> getCenterOwnerCenterList(String jwtToken, CenterOwnerCenterListRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<CenterListDropdownProjection> centerListResult = centerRepository.findByNameContainingAndUserId(query, userId);
-        return new ResponseEntity<>(centerListResult, HttpStatus.OK);
+
+        CenterFilterCriteria filterCriteria = new CenterFilterCriteria();
+        filterCriteria.setCenterOwnerId(userId);
+
+        List<Sort.Order> sortOrders = new ArrayList<>();
+
+        Sort sort = Sort.by(sortOrders);
+
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
+
+        Page<CenterOwnerCenterListProjection> centerList = centerRepository.findBy(new CenterSpecification(filterCriteria), q -> q.as(CenterOwnerCenterListProjection.class).sortBy(pageable.getSort()).page(pageable));
+
+        CenterOwnerCenterListResposneData responseData = new CenterOwnerCenterListResposneData();
+        responseData.setTotalPage(centerList.getTotalPages());
+        responseData.setCenterList(centerList.getContent());
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 }

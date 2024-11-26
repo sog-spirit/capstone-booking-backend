@@ -13,9 +13,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.capstone.core.productinventory.data.AddNewProductInventoryRequestData;
-import com.capstone.core.productinventory.data.CenterOwnerProductInventoryManagementRequestData;
-import com.capstone.core.productinventory.data.CenterOwnerProductInventoryManagementResponseData;
+import com.capstone.core.productinventory.data.request.AddNewProductInventoryRequestData;
+import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryManagementRequestData;
+import com.capstone.core.productinventory.data.request.UserProductInventoryListRequestData;
+import com.capstone.core.productinventory.data.response.CenterOwnerProductInventoryManagementResponseData;
 import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryListProjection;
 import com.capstone.core.productinventory.projection.UserProductOrderPageListProjection;
 import com.capstone.core.productinventory.specification.ProductInventorySpecification;
@@ -74,7 +75,7 @@ public class ProductInventoryService {
         return new ResponseEntity<>(productInventoryList, HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getUserProductInventoryList(String jwtToken, Long centerId) {
+    ResponseEntity<Object> getUserProductInventoryList(String jwtToken, UserProductInventoryListRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -82,7 +83,7 @@ public class ProductInventoryService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<UserProductOrderPageListProjection> productList = productInventoryRepository.findUserProductOrderPageListByCenterId(centerId);
+        List<UserProductOrderPageListProjection> productList = productInventoryRepository.findUserProductOrderPageListByCenterId(requestData.getCenterId());
         return new ResponseEntity<>(productList, HttpStatus.OK); 
     }
 

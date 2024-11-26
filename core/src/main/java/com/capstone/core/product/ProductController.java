@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.capstone.core.product.data.CreateProductRequestData;
-import com.capstone.core.product.data.EditProductRequestData;
+import com.capstone.core.product.data.request.CenterOwnerProductListRequestData;
+import com.capstone.core.product.data.request.CreateProductRequestData;
+import com.capstone.core.product.data.request.EditProductRequestData;
+import com.capstone.core.product.data.request.ProductListDropdownRequestData;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -38,14 +40,15 @@ public class ProductController {
         return productService.editProduct(jwtToken, editProductRequestData);
     }
 
-    @GetMapping(value = "/list")
-    ResponseEntity<Object> getProductList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
-        return productService.getProductList(jwtToken);
+    @GetMapping(value = "/center-owner/dropdown/list", params = {"query"})
+    ResponseEntity<Object> getProductListDropdown(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            ProductListDropdownRequestData requestData) {
+        return productService.getProductListDropdown(jwtToken, requestData);
     }
 
-    @GetMapping(value = "/list", params = {"query"})
-    ResponseEntity<Object> getProductListDropdown(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestParam String query) {
-        return productService.getProductListDropdown(jwtToken, query);
+    @GetMapping("/center-owner/list")
+    ResponseEntity<Object> getCenterOwnerProductList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerProductListRequestData requestData) {
+        return productService.getCenterOwnerProductList(jwtToken, requestData);
     }
 }

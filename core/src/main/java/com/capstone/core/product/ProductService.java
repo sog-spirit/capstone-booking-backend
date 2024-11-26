@@ -2,9 +2,14 @@ package com.capstone.core.product;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,10 +17,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.image.ImageRepository;
-import com.capstone.core.product.data.CreateProductRequestData;
-import com.capstone.core.product.data.EditProductRequestData;
+import com.capstone.core.product.data.request.CenterOwnerProductListRequestData;
+import com.capstone.core.product.data.request.CreateProductRequestData;
+import com.capstone.core.product.data.request.EditProductRequestData;
+import com.capstone.core.product.data.request.ProductListDropdownRequestData;
+import com.capstone.core.product.projection.CenterOwnerProductListProjection;
 import com.capstone.core.product.projection.ProductListDropdownProjection;
 import com.capstone.core.product.projection.ProductListProjection;
+import com.capstone.core.product.specification.ProductSpecification;
+import com.capstone.core.product.specification.criteria.ProductCriteria;
 import com.capstone.core.productimage.ProductImageRepository;
 import com.capstone.core.table.ImageTable;
 import com.capstone.core.table.ProductImageTable;
@@ -128,14 +138,36 @@ public class ProductService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getProductListDropdown(String jwtToken, String query) {
+    ResponseEntity<Object> getProductListDropdown(String jwtToken, ProductListDropdownRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<ProductListDropdownProjection> productListDropdownResult = productRepository.findByUserIdAndNameContaining(userId, query);
+        List<ProductListDropdownProjection> productListDropdownResult = productRepository.findByUserIdAndNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(productListDropdownResult, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductList(String jwtToken, CenterOwnerProductListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        ProductCriteria productCriteria = new ProductCriteria();
+        productCriteria.setUserId(userId);
+
+        List<Sort.Order> sortOrders = new ArrayList<>();
+
+        Sort sort = Sort.by(sortOrders);
+
+        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+
+        Page<CenterOwnerProductListProjection> productList = productRepository.findBy(new ProductSpecification(productCriteria), q -> q.as(CenterOwnerProductListProjection.class).sortBy(pageable.getSort()).page(pageable));
+
+        return new ResponseEntity<>(productList.getContent(), HttpStatus.OK);
     }
 }

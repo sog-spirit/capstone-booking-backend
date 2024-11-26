@@ -1,17 +1,24 @@
 package com.capstone.core.employeelist;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.capstone.core.employeelist.data.AddNewEmployeeRequestData;
-import com.capstone.core.employeelist.projection.EmployeeListProjection;
+import com.capstone.core.employeelist.data.request.AddNewEmployeeRequestData;
+import com.capstone.core.employeelist.data.response.CenterOwnerEmployeeListResponseData;
+import com.capstone.core.employeelist.projection.CenterOwnerEmployeeListProjection;
+import com.capstone.core.employeelist.specification.EmployeeListSpecification;
+import com.capstone.core.employeelist.specification.criteria.EmployeeListCriteria;
 import com.capstone.core.table.EmployeeListTable;
 import com.capstone.core.table.RoleTable;
 import com.capstone.core.table.UserRoleTable;
@@ -32,7 +39,6 @@ public class EmployeeListService {
     private PasswordEncoder passwordEncoder;
     private UserRoleRepository userRoleRepository;
 
-    @Transactional
     ResponseEntity<Object> addNewEmployee(String jwtToken, AddNewEmployeeRequestData addNewEmployeeRequestData) {
         Long userId;
         try {
@@ -76,7 +82,7 @@ public class EmployeeListService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getEmployeeList(String jwtToken) {
+    ResponseEntity<Object> getCenterOwnerEmployeeList(String jwtToken) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -84,7 +90,21 @@ public class EmployeeListService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<EmployeeListProjection> employeeList = employeeListRepository.findByCenterOwnerId(userId);
-        return new ResponseEntity<>(employeeList, HttpStatus.OK);
+        EmployeeListCriteria employeeListCriteria = new EmployeeListCriteria();
+        employeeListCriteria.setCenterOwnerId(userId);
+
+        List<Sort.Order> sortOrders = new ArrayList<>();
+
+        Sort sort = Sort.by(sortOrders);
+
+        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+
+        Page<CenterOwnerEmployeeListProjection> employeeList = employeeListRepository.findBy(new EmployeeListSpecification(employeeListCriteria), q -> q.as(CenterOwnerEmployeeListProjection.class).sortBy(pageable.getSort()).page(pageable));
+
+        CenterOwnerEmployeeListResponseData responseData = new CenterOwnerEmployeeListResponseData();
+        responseData.setTotalPage(employeeList.getTotalPages());
+        responseData.setEmployeeList(employeeList.getContent());
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 }

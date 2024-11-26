@@ -6,11 +6,23 @@ import java.time.LocalTime;
 
 public interface UserCourtBookingListProjection {
     Long getId();
-    String getCenterName();
-    String getCourtName();
+    Center getCenter();
+    Court getCourt();
+    Status getStatus();
     LocalDateTime getCreateTimestamp();
     LocalDate getUsageDate();
     LocalTime getUsageTimeStart();
     LocalTime getUsageTimeEnd();
-    String getStatusName();
+
+    interface Center {
+        String getName();
+    }
+
+    interface Court {
+        String getName();
+    }
+
+    interface Status {
+        String getName();
+    }
 }

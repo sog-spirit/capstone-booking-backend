@@ -4,9 +4,22 @@ import java.time.LocalDateTime;
 
 public interface CenterOwnerProductOrderListProjection {
     Long getId();
-    String getUserUsername();
     LocalDateTime getCreateTimestamp();
     Long getTotal();
-    String getCenterName();
-    String getStatusName();
+
+    User getUser();
+    Center getCenter();
+    Status getStatus();
+
+    interface User {
+        String getUsername();
+    }
+
+    interface Center {
+        String getName();
+    }
+
+    interface Status {
+        String getName();
+    }
 }

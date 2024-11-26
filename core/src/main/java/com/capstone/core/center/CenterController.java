@@ -1,19 +1,21 @@
 package com.capstone.core.center;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.capstone.core.center.data.AddNewCenterRequestData;
-import com.capstone.core.center.data.EditCenterRequestData;
+import com.capstone.core.center.data.request.AddNewCenterRequestData;
+import com.capstone.core.center.data.request.CenterOwnerCenterDropdownRequestData;
+import com.capstone.core.center.data.request.CenterOwnerCenterListRequestData;
+import com.capstone.core.center.data.request.EditCenterRequestData;
+import com.capstone.core.center.data.request.UserCenterListRequestData;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -38,20 +40,21 @@ public class CenterController {
         return centerService.editCenter(jwtToken, editCenterRequestData);
     }
 
-    @GetMapping(value = "/list", params = {"pageNo", "pageSize"})
-    public ResponseEntity<Object> getCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestParam(defaultValue = "0") Integer pageNo, @RequestParam(defaultValue = "5") Integer pageSize) {
-        return centerService.getCenterList(jwtToken, pageNo, pageSize);
+    @GetMapping(value = "/user/list")
+    public ResponseEntity<Object> getUserCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserCenterListRequestData requestData) {
+        return centerService.getUserCenterList(jwtToken, requestData);
     }
 
-    @GetMapping(value = "/list")
-    public ResponseEntity<Object> getCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
-        return centerService.getCenterList(jwtToken);
+    @GetMapping(value = "/center-owner/list")
+    public ResponseEntity<Object> getCenterOwnerCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCenterListRequestData requestData) {
+        return centerService.getCenterOwnerCenterList(jwtToken, requestData);
     }
 
-    @GetMapping(value = "/list", params = {"query"})
-    public ResponseEntity<Object> getCenterDropdownList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestParam String query) {
-        return centerService.getCenterDropdownList(jwtToken, query);
+    @GetMapping(value = "/center-owner/list/dropdown")
+    public ResponseEntity<Object> getCenterOwnerCenterDropdownList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCenterDropdownRequestData requestData) {
+        return centerService.getCenterOwnerCenterDropdownList(jwtToken, requestData);
     }
 }

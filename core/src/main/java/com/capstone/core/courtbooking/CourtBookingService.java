@@ -1,19 +1,27 @@
 package com.capstone.core.courtbooking;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.capstone.core.courtbooking.data.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.UserCenterCourtBookingListRequestData;
+import com.capstone.core.courtbooking.data.request.UserCenterListFromUserOrderRequestData;
 import com.capstone.core.courtbooking.projection.CenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingListProjection;
+import com.capstone.core.courtbooking.specification.CourtBookingSpecification;
+import com.capstone.core.courtbooking.specification.criteria.CourtBookingCriteria;
 import com.capstone.core.table.BookingOrderStatusTable;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.CourtBookingTable;
@@ -29,7 +37,6 @@ import lombok.AllArgsConstructor;
 public class CourtBookingService {
     private CourtBookingRepository courtBookingRepository;
 
-    @Transactional
     ResponseEntity<Object> addNewCourtBooking(String jwtToken, AddNewCourtBookingRequestData addNewCourtBookingRequestData) {
         Long userId;
         try {
@@ -62,8 +69,8 @@ public class CourtBookingService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCourtBookingList(String jwtToken, Long centerId, Long courtId) {
-        List<CourtBookingListProjection> courtBookingList = courtBookingRepository.findByCenterIdAndCourtId(centerId, courtId);
+    ResponseEntity<Object> getUserCenterCourtBookingList(String jwtToken, UserCenterCourtBookingListRequestData requestData) {
+        List<CourtBookingListProjection> courtBookingList = courtBookingRepository.findByCenterIdAndCourtId(requestData.getCenterId(), requestData.getCourtId());
         return new ResponseEntity<>(courtBookingList, HttpStatus.OK);
     }
 
@@ -74,8 +81,19 @@ public class CourtBookingService {
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<UserCourtBookingListProjection> userCourtBookingList = courtBookingRepository.findByUserId(userId);
-        return new ResponseEntity<>(userCourtBookingList, HttpStatus.OK);
+
+        CourtBookingCriteria courtBookingCriteria = new CourtBookingCriteria();
+        courtBookingCriteria.setUserId(userId);
+
+        List<Sort.Order> sortOrders = new ArrayList<>();
+
+        Sort sort = Sort.by(sortOrders);
+
+        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+
+        Page<UserCourtBookingListProjection> userCourtBookingList = courtBookingRepository.findBy(new CourtBookingSpecification(courtBookingCriteria), q -> q.as(UserCourtBookingListProjection.class).sortBy(pageable.getSort()).page(pageable));
+
+        return new ResponseEntity<>(userCourtBookingList.getContent(), HttpStatus.OK);
     }
 
     ResponseEntity<Object> getCenterOwnerCourtBookingList(String jwtToken) {
@@ -89,14 +107,14 @@ public class CourtBookingService {
         return new ResponseEntity<>(centerOwnerCourtBookingList, HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCenterListFromUserOrder(String jwtToken, String query) {
+    ResponseEntity<Object> getUserCenterListFromUserOrder(String jwtToken, UserCenterListFromUserOrderRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<CenterListProjection> centerList = courtBookingRepository.findCenterListByUserIdAndCenterNameContaining(userId, query);
+        List<CenterListProjection> centerList = courtBookingRepository.findCenterListByUserIdAndCenterNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(centerList, HttpStatus.OK);
     }
 }

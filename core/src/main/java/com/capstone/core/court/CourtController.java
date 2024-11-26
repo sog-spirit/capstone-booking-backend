@@ -1,6 +1,7 @@
 package com.capstone.core.court;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -10,10 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.capstone.core.court.data.AddNewCourtRequestData;
-import com.capstone.core.court.data.EditCourtRequestData;
+import com.capstone.core.court.data.request.AddNewCourtRequestData;
+import com.capstone.core.court.data.request.CenterOwnerCourtListRequestData;
+import com.capstone.core.court.data.request.EditCourtRequestData;
+import com.capstone.core.court.data.request.UserCenterCourtListRequestData;
+import com.capstone.core.court.data.request.UserCourtDropdownListRequestData;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -31,16 +34,22 @@ public class CourtController {
         return courtService.addNewCourt(jwtToken, addNewCourtRequestData);
     }
 
-    @GetMapping
-    public ResponseEntity<Object> getCourtList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestParam Long centerId) {
-        return courtService.getCourtList(jwtToken, centerId);
+    @GetMapping(value = "/user/center/list")
+    public ResponseEntity<Object> getUserCenterCourtList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserCenterCourtListRequestData requestData) {
+        return courtService.getUserCenterCourtList(jwtToken, requestData);
     }
 
-    @GetMapping(value = "/list")
-    ResponseEntity<Object> getCourtList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestParam Long centerId, @RequestParam String query) {
-        return courtService.getCourtList(jwtToken, centerId, query);
+    @GetMapping(value = "/user/dropdown/list")
+    ResponseEntity<Object> getUserCourtDropdownList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserCourtDropdownListRequestData requestData) {
+        return courtService.getUserCourtDropdownList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/list")
+    ResponseEntity<Object> getCenterOwnerCourtList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCourtListRequestData requestData) {
+        return courtService.getCenterOwnerCourtList(jwtToken, requestData);
     }
 
     @PutMapping

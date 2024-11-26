@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.capstone.core.blacklistjwttoken.data.AccessTokenRequestData;
-import com.capstone.core.blacklistjwttoken.data.AccessTokenResponseData;
-import com.capstone.core.blacklistjwttoken.data.RefreshTokenRequestData;
+import com.capstone.core.blacklistjwttoken.data.request.AccessTokenRequestData;
+import com.capstone.core.blacklistjwttoken.data.request.RefreshTokenRequestData;
+import com.capstone.core.blacklistjwttoken.data.response.AccessTokenResponseData;
 import com.capstone.core.table.BlacklistJWTTokenTable;
 import com.capstone.core.table.UserTable;
 import com.capstone.core.user.UserRepository;
