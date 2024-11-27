@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.courtbooking.data.request.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCourtCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterListFromUserOrderRequestData;
 
@@ -44,6 +45,12 @@ public class CourtBookingController {
     @GetMapping(value = "/center-owner/list")
     ResponseEntity<Object> getCenterOwnerCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
         return courtBookingService.getCenterOwnerCourtBookingList(jwtToken);
+    }
+
+    @GetMapping(value = "/center-owner/court/list")
+    ResponseEntity<Object> getCenterOwnerCourtCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCourtCourtBookingListRequestData requestData) {
+        return courtBookingService.getCenterOwnerCourtCourtBookingList(jwtToken, requestData);
     }
 
     @GetMapping(value = "/user/list/center-list")

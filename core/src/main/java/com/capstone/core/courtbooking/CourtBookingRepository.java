@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.capstone.core.courtbooking.projection.CenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingListProjection;
+import com.capstone.core.courtbooking.projection.CenterOwnerCourtCourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingListProjection;
 import com.capstone.core.table.CourtBookingTable;
@@ -18,4 +19,5 @@ public interface CourtBookingRepository extends JpaRepository<CourtBookingTable,
     List<UserCourtBookingListProjection> findByUserId(Long userId);
     List<CenterOwnerCourtBookingListProjection> findByCenterUserId(Long userId);
     List<CenterListProjection> findCenterListByUserIdAndCenterNameContaining(Long userId, String centerNameQuery);
+    List<CenterOwnerCourtCourtBookingListProjection> findCourtBookingListByCourtId(Long courtId);
 }

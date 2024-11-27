@@ -16,13 +16,16 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.center.data.request.AddNewCenterRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterDropdownRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterListRequestData;
+import com.capstone.core.center.data.request.CenterOwnerCenterWorkingTimeRequestData;
 import com.capstone.core.center.data.request.EditCenterRequestData;
 import com.capstone.core.center.data.request.UserCenterListRequestData;
 import com.capstone.core.center.data.response.CenterOwnerCenterListResposneData;
+import com.capstone.core.center.data.response.CenterOwnerCenterWorkingTimeResponseData;
 import com.capstone.core.center.data.response.UserCenterListResponseData;
 import com.capstone.core.center.projection.CenterOwnerCenterListDropdownProjection;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.center.projection.CenterOwnerCenterListProjection;
+import com.capstone.core.center.projection.CenterOwnerCenterWorkingTimeProjection;
 import com.capstone.core.center.projection.UserCenterListProjection;
 import com.capstone.core.center.specification.CenterSpecification;
 import com.capstone.core.center.specification.criteria.CenterFilterCriteria;
@@ -129,6 +132,23 @@ public class CenterService {
         CenterOwnerCenterListResposneData responseData = new CenterOwnerCenterListResposneData();
         responseData.setTotalPage(centerList.getTotalPages());
         responseData.setCenterList(centerList.getContent());
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerCenterWorkingTime(String jwtToken, CenterOwnerCenterWorkingTimeRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CenterOwnerCenterWorkingTimeProjection centerWorkingTime = centerRepository.findCenterWorkingTimeById(requestData.getCenterId());
+
+        CenterOwnerCenterWorkingTimeResponseData responseData = new CenterOwnerCenterWorkingTimeResponseData();
+        responseData.setOpeningTime(centerWorkingTime.getOpeningTime());
+        responseData.setClosingTime(centerWorkingTime.getClosingTime());
 
         return new ResponseEntity<>(responseData, HttpStatus.OK);
     }

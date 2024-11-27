@@ -1,8 +1,12 @@
 package com.capstone.core.courtbooking;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,11 +17,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.capstone.core.court.CourtRepository;
+import com.capstone.core.court.projection.CourtCenterWorkingTimeProjection;
 import com.capstone.core.courtbooking.data.request.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCourtCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterListFromUserOrderRequestData;
+import com.capstone.core.courtbooking.data.response.CenterOwnerCourtCourtBookingListResponseData;
 import com.capstone.core.courtbooking.projection.CenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingListProjection;
+import com.capstone.core.courtbooking.projection.CenterOwnerCourtCourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingListProjection;
 import com.capstone.core.courtbooking.specification.CourtBookingSpecification;
@@ -36,6 +45,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CourtBookingService {
     private CourtBookingRepository courtBookingRepository;
+    private CourtRepository courtRepository;
 
     ResponseEntity<Object> addNewCourtBooking(String jwtToken, AddNewCourtBookingRequestData addNewCourtBookingRequestData) {
         Long userId;
@@ -116,5 +126,64 @@ public class CourtBookingService {
         }
         List<CenterListProjection> centerList = courtBookingRepository.findCenterListByUserIdAndCenterNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(centerList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerCourtCourtBookingList(String jwtToken, CenterOwnerCourtCourtBookingListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CourtCenterWorkingTimeProjection workingTime = courtRepository.findWorkingTimeById(requestData.getCourtId());
+        List<CenterOwnerCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findCourtBookingListByCourtId(requestData.getCourtId());
+
+        List<Object> timeMarks = new ArrayList<>();
+        Map<String, Object> timeMarksItem;
+        LocalTime currentTime = workingTime.getCenter().getOpeningTime();
+        int intervalMinutes = 15;
+
+        if (courtBookingList.isEmpty()) {
+            do {
+                timeMarksItem = new HashMap<>();
+                timeMarksItem.put("span", 1);
+                timeMarks.add(timeMarksItem);
+                currentTime = currentTime.plusMinutes(intervalMinutes);
+            } while (!currentTime.isAfter(workingTime.getCenter().getClosingTime()));
+        } else {
+            int courtBookingListIndex = 0;
+            Long courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
+            LocalTime bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
+            LocalTime bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+
+            do {
+                if (currentTime.equals(bookedStart)) {
+                    int bookedSpan = (int) (bookedEnd.toSecondOfDay() - bookedStart.toSecondOfDay()) / (intervalMinutes * 60);
+                    timeMarksItem = new HashMap<>();
+                    timeMarksItem.put("courtBookingId", courtBookingId);
+                    timeMarksItem.put("span", bookedSpan);
+                    timeMarks.add(timeMarksItem);
+                    currentTime = bookedEnd;
+
+                    courtBookingListIndex++;
+                    if (courtBookingListIndex < courtBookingList.size()) {
+                        courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
+                        bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
+                        bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+                    }
+                } else {
+                    timeMarksItem = new HashMap<>();
+                    timeMarksItem.put("span", 1);
+                    timeMarks.add(timeMarksItem);
+                    currentTime = currentTime.plusMinutes(intervalMinutes);
+                }
+            } while (!currentTime.isAfter(workingTime.getCenter().getClosingTime()));
+        }
+
+        CenterOwnerCourtCourtBookingListResponseData responseData = new CenterOwnerCourtCourtBookingListResponseData();
+        responseData.setTimeMarks(timeMarks);
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 }

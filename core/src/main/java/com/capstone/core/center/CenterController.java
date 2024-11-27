@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.capstone.core.center.data.request.AddNewCenterRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterDropdownRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterListRequestData;
+import com.capstone.core.center.data.request.CenterOwnerCenterWorkingTimeRequestData;
 import com.capstone.core.center.data.request.EditCenterRequestData;
 import com.capstone.core.center.data.request.UserCenterListRequestData;
 
@@ -56,5 +57,11 @@ public class CenterController {
     public ResponseEntity<Object> getCenterOwnerCenterDropdownList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             CenterOwnerCenterDropdownRequestData requestData) {
         return centerService.getCenterOwnerCenterDropdownList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/working-time")
+    public ResponseEntity<Object> getCenterOwnerCenterWorkingTime(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCenterWorkingTimeRequestData requestData) {
+        return centerService.getCenterOwnerCenterWorkingTime(jwtToken, requestData);
     }
 }

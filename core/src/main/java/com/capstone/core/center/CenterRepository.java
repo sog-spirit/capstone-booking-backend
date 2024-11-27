@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.capstone.core.center.projection.CenterOwnerCenterListDropdownProjection;
+import com.capstone.core.center.projection.CenterOwnerCenterWorkingTimeProjection;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.center.projection.UserCenterListProjection;
 import com.capstone.core.table.CenterTable;
@@ -18,4 +19,5 @@ public interface CenterRepository extends JpaRepository<CenterTable, Long>, JpaS
     Page<CenterListProjection> findByUserId(Long id, Pageable pageable);
     Page<UserCenterListProjection> findUserCenterListBy(Pageable pageable);
     List<CenterOwnerCenterListDropdownProjection> findByNameContainingAndUserId(String name, Long id);
+    CenterOwnerCenterWorkingTimeProjection findCenterWorkingTimeById(Long centerId);
 }
