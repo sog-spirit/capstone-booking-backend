@@ -13,7 +13,17 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.centerreview.data.request.AddNewCenterReviewRequestData;
+import com.capstone.core.centerreview.data.request.CenterOwnerCenterReviewCenterFilterListRequestData;
+import com.capstone.core.centerreview.data.request.CenterOwnerCenterReviewUserFilterListRequestData;
+import com.capstone.core.centerreview.data.request.CenterOwnerReviewListRequestData;
+import com.capstone.core.centerreview.data.request.UserCenterReviewCenterFilterListRequestData;
+import com.capstone.core.centerreview.data.request.UserCenterReviewListRequestData;
+import com.capstone.core.centerreview.data.response.CenterOwnerReviewListResponseData;
+import com.capstone.core.centerreview.data.response.UserCenterReviewListResponseData;
+import com.capstone.core.centerreview.projection.CenterOwnerCenterReviewCenterFilterListProjection;
+import com.capstone.core.centerreview.projection.CenterOwnerCenterReviewUserFilterListProjection;
 import com.capstone.core.centerreview.projection.CenterOwnerReviewListProjection;
+import com.capstone.core.centerreview.projection.UserCenterReviewCenterFilterListProjection;
 import com.capstone.core.centerreview.projection.UserCenterReviewListProjection;
 import com.capstone.core.centerreview.specification.CenterReviewSpecification;
 import com.capstone.core.centerreview.specification.criteria.CenterReviewCriteria;
@@ -52,7 +62,7 @@ public class CenterReviewService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getUserCenterReviewList(String jwtToken) {
+    ResponseEntity<Object> getUserCenterReviewList(String jwtToken, UserCenterReviewListRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -62,19 +72,30 @@ public class CenterReviewService {
 
         CenterReviewCriteria centerReviewCriteria = new CenterReviewCriteria();
         centerReviewCriteria.setUserId(userId);
+        centerReviewCriteria.setId(requestData.getId());
+        centerReviewCriteria.setCenterId(requestData.getCenterId());
 
         List<Sort.Order> sortOrders = new ArrayList<>();
+        if (requestData.getIdSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getIdSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "id"));
+        }
+        if (requestData.getCenterSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getCenterSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "center"));
+        }
 
         Sort sort = Sort.by(sortOrders);
 
-        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
 
         Page<UserCenterReviewListProjection> reviewList = centerReviewRepository.findBy(new CenterReviewSpecification(centerReviewCriteria), q -> q.as(UserCenterReviewListProjection.class).sortBy(pageable.getSort()).page(pageable));
+        UserCenterReviewListResponseData responseData = new UserCenterReviewListResponseData();
+        responseData.setTotalPage(reviewList.getTotalPages());
+        responseData.setCenterReviewList(reviewList.getContent());
 
-        return new ResponseEntity<>(reviewList.getContent(), HttpStatus.OK);
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCenterOwnerReviewList(String jwtToken) {
+    ResponseEntity<Object> getCenterOwnerReviewList(String jwtToken, CenterOwnerReviewListRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -84,15 +105,66 @@ public class CenterReviewService {
 
         CenterReviewCriteria centerReviewCriteria = new CenterReviewCriteria();
         centerReviewCriteria.setCenterOwnerId(userId);
+        centerReviewCriteria.setId(requestData.getId());
+        centerReviewCriteria.setCenterId(requestData.getCenterId());
+        centerReviewCriteria.setUserId(requestData.getUserId());
 
         List<Sort.Order> sortOrders = new ArrayList<>();
+        if (requestData.getIdSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getIdSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "id"));
+        }
+        if (requestData.getUserSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getUserSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "user"));
+        }
+        if (requestData.getCenterSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getCenterSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "center"));
+        }
 
         Sort sort = Sort.by(sortOrders);
 
-        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
 
+        CenterOwnerReviewListResponseData responseData = new CenterOwnerReviewListResponseData();
         Page<CenterOwnerReviewListProjection> reviewList = centerReviewRepository.findBy(new CenterReviewSpecification(centerReviewCriteria), q -> q.as(CenterOwnerReviewListProjection.class).sortBy(pageable.getSort()).page(pageable));
+        responseData.setTotalPage(reviewList.getTotalPages());
+        responseData.setCenterReviewList(reviewList.getContent());
 
-        return new ResponseEntity<>(reviewList.getContent(), HttpStatus.OK);
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerCenterReviewUserFilterList(String jwtToken, CenterOwnerCenterReviewUserFilterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<CenterOwnerCenterReviewUserFilterListProjection> userList = centerReviewRepository.findCenterOwnerCenterReviewUserFilterListDistinctUserIdByCenterUserIdAndUserUsernameContaining(userId, requestData.getQuery());
+        return new ResponseEntity<>(userList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerCenterReviewCenterFilterList(String jwtToken, CenterOwnerCenterReviewCenterFilterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<CenterOwnerCenterReviewCenterFilterListProjection> centerList = centerReviewRepository.findCenterOwnerCenterReviewCenterFilterListDistinctCenterIdByCenterUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        return new ResponseEntity<>(centerList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getUserCenterReviewCenterFilterList(String jwtToken, UserCenterReviewCenterFilterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<UserCenterReviewCenterFilterListProjection> centerList = centerReviewRepository.findUserCenterReviewCenterFilterListDistinctCenterIdByUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        return new ResponseEntity<>(centerList, HttpStatus.OK);
     }
 }

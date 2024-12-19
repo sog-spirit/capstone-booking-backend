@@ -14,10 +14,14 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.productinventory.data.request.AddNewProductInventoryRequestData;
+import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryCenterFilterListRequestData;
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryManagementRequestData;
+import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryProductFilterListRequestData;
 import com.capstone.core.productinventory.data.request.UserProductInventoryListRequestData;
 import com.capstone.core.productinventory.data.response.CenterOwnerProductInventoryManagementResponseData;
+import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryCenterFilterListProjection;
 import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryListProjection;
+import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryProductFilterListInterface;
 import com.capstone.core.productinventory.projection.UserProductOrderPageListProjection;
 import com.capstone.core.productinventory.specification.ProductInventorySpecification;
 import com.capstone.core.productinventory.specification.criteria.ProductInventoryFilterCriteria;
@@ -123,5 +127,29 @@ public class ProductInventoryService {
         responseData.setTotalPage(productInventoryList.getTotalPages());
 
         return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductInventoryCenterFilterList(String jwtToken, CenterOwnerProductInventoryCenterFilterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<CenterOwnerProductInventoryCenterFilterListProjection> centerList = productInventoryRepository.findCenterOwnerProductInventoryCenterFilterListDistinctCenterIdByUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        return new ResponseEntity<Object>(centerList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductInventoryProductFilterList(String jwtToken, CenterOwnerProductInventoryProductFilterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<CenterOwnerProductInventoryProductFilterListInterface> productList = productInventoryRepository.findCenterOwnerProductInventoryProductFilterListDistinctProductIdByUserIdAndProductNameContaining(userId, requestData.getQuery());
+        return new ResponseEntity<Object>(productList, HttpStatus.OK);
     }
 }

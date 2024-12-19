@@ -9,5 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CenterReviewCriteria {
     private Long centerOwnerId;
+    private Long id;
     private Long userId;
+    private Long centerId;
 }

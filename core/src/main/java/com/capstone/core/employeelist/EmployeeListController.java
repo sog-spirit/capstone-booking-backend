@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.employeelist.data.request.AddNewEmployeeRequestData;
+import com.capstone.core.employeelist.data.request.CenterOwnerEmployeeListRequestData;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -29,7 +30,8 @@ public class EmployeeListController {
     }
 
     @GetMapping(value = "/center-owner/list")
-    ResponseEntity<Object> getCenterOwnerEmployeeList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
-        return employeeListService.getCenterOwnerEmployeeList(jwtToken);
+    ResponseEntity<Object> getCenterOwnerEmployeeList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerEmployeeListRequestData requestData) {
+        return employeeListService.getCenterOwnerEmployeeList(jwtToken, requestData);
     }
 }

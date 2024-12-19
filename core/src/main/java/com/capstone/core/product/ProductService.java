@@ -21,6 +21,7 @@ import com.capstone.core.product.data.request.CenterOwnerProductListRequestData;
 import com.capstone.core.product.data.request.CreateProductRequestData;
 import com.capstone.core.product.data.request.EditProductRequestData;
 import com.capstone.core.product.data.request.ProductListDropdownRequestData;
+import com.capstone.core.product.data.response.CenterOwnerProductListResponseData;
 import com.capstone.core.product.projection.CenterOwnerProductListProjection;
 import com.capstone.core.product.projection.ProductListDropdownProjection;
 import com.capstone.core.product.projection.ProductListProjection;
@@ -164,10 +165,13 @@ public class ProductService {
 
         Sort sort = Sort.by(sortOrders);
 
-        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
 
         Page<CenterOwnerProductListProjection> productList = productRepository.findBy(new ProductSpecification(productCriteria), q -> q.as(CenterOwnerProductListProjection.class).sortBy(pageable.getSort()).page(pageable));
+        CenterOwnerProductListResponseData responseData = new CenterOwnerProductListResponseData();
+        responseData.setTotalPage(productList.getTotalPages());
+        responseData.setProductList(productList.getContent());
 
-        return new ResponseEntity<>(productList.getContent(), HttpStatus.OK);
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 }

@@ -7,11 +7,27 @@ import java.time.LocalTime;
 public interface CenterOwnerCourtBookingListProjection {
     Long getId();
     LocalDateTime getCreateTimestamp();
-    String getCenterName();
-    String getCourtName();
-    String getUserUsername();
+    Center getCenter();
+    Court getCourt();
+    User getUser();
     LocalDate getUsageDate();
     LocalTime getUsageTimeStart();
     LocalTime getUsageTimeEnd();
-    String getStatusName();
+    Status getStatus();
+
+    interface Center {
+        String getName();
+    }
+
+    interface Court {
+        String getName();
+    }
+
+    interface User {
+        String getUsername();
+    }
+
+    interface Status {
+        String getName();
+    }
 }

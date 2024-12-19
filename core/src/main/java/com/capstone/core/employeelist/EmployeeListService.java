@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.employeelist.data.request.AddNewEmployeeRequestData;
+import com.capstone.core.employeelist.data.request.CenterOwnerEmployeeListRequestData;
 import com.capstone.core.employeelist.data.response.CenterOwnerEmployeeListResponseData;
 import com.capstone.core.employeelist.projection.CenterOwnerEmployeeListProjection;
 import com.capstone.core.employeelist.specification.EmployeeListSpecification;
@@ -82,7 +83,7 @@ public class EmployeeListService {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    ResponseEntity<Object> getCenterOwnerEmployeeList(String jwtToken) {
+    ResponseEntity<Object> getCenterOwnerEmployeeList(String jwtToken, CenterOwnerEmployeeListRequestData requestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
@@ -92,12 +93,32 @@ public class EmployeeListService {
 
         EmployeeListCriteria employeeListCriteria = new EmployeeListCriteria();
         employeeListCriteria.setCenterOwnerId(userId);
+        employeeListCriteria.setUsername(requestData.getUsername());
+        employeeListCriteria.setFirstName(requestData.getFirstName());
+        employeeListCriteria.setLastName(requestData.getLastName());
+        employeeListCriteria.setPhone(requestData.getPhone());
+        employeeListCriteria.setEmail(requestData.getEmail());
 
         List<Sort.Order> sortOrders = new ArrayList<>();
+        if (requestData.getUsernameSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getUsernameSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "employeeUsername"));
+        }
+        if (requestData.getFirstNameSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getFirstNameSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "employeeFirstName"));
+        }
+        if (requestData.getLastNameSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getLastNameSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "employeeLastName"));
+        }
+        if (requestData.getPhoneSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getPhoneSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "employeePhone"));
+        }
+        if (requestData.getEmailSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getEmailSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "employeeEmail"));
+        }
 
         Sort sort = Sort.by(sortOrders);
 
-        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
 
         Page<CenterOwnerEmployeeListProjection> employeeList = employeeListRepository.findBy(new EmployeeListSpecification(employeeListCriteria), q -> q.as(CenterOwnerEmployeeListProjection.class).sortBy(pageable.getSort()).page(pageable));
 

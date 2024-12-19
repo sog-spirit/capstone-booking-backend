@@ -7,13 +7,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.courtbooking.data.request.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingCenterListRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingCourtListRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingListRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingUserListRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterListFromUserOrderRequestData;
+import com.capstone.core.courtbooking.data.request.UserCourtBookingCenterListRequestData;
+import com.capstone.core.courtbooking.data.request.UserCourtBookingCourtListRequestData;
+import com.capstone.core.courtbooking.data.request.UserCourtBookingListRequestData;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -38,13 +44,15 @@ public class CourtBookingController {
     }
 
     @GetMapping(value = "/user/list")
-    ResponseEntity<Object> getUserCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
-        return courtBookingService.getUserCourtBookingList(jwtToken);
+    ResponseEntity<Object> getUserCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserCourtBookingListRequestData requestData) {
+        return courtBookingService.getUserCourtBookingList(jwtToken, requestData);
     }
 
     @GetMapping(value = "/center-owner/list")
-    ResponseEntity<Object> getCenterOwnerCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
-        return courtBookingService.getCenterOwnerCourtBookingList(jwtToken);
+    ResponseEntity<Object> getCenterOwnerCourtBookingList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCourtBookingListRequestData requestData) {
+        return courtBookingService.getCenterOwnerCourtBookingList(jwtToken, requestData);
     }
 
     @GetMapping(value = "/center-owner/court/list")
@@ -57,5 +65,35 @@ public class CourtBookingController {
     ResponseEntity<Object> getUserCenterListFromUserOrder(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             UserCenterListFromUserOrderRequestData requestData) {
         return courtBookingService.getUserCenterListFromUserOrder(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/filter/list/center")
+    ResponseEntity<Object> getCenterOwnerCourtBookingCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCourtBookingCenterListRequestData requestData) {
+        return courtBookingService.getCenterOwnerCourtBookingCenterList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/filter/list/court")
+    ResponseEntity<Object> getCenterOwnerCourtBookingCourtList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCourtBookingCourtListRequestData requestData) {
+        return courtBookingService.getCenterOwnerCourtBookingCourtList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/filter/list/user")
+    ResponseEntity<Object> getCenterOwnerCourtBookingUserList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCourtBookingUserListRequestData requestData) {
+        return courtBookingService.getCenterOwnerCourtBookingUserList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/user/filter/list/center")
+    ResponseEntity<Object> getUserCourtBookingCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserCourtBookingCenterListRequestData requestData) {
+        return courtBookingService.getUserCourtBookingCenterList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/user/filter/list/court")
+    ResponseEntity<Object> getUserCourtBookingCourtList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserCourtBookingCourtListRequestData requestData) {
+        return courtBookingService.getUserCourtBookingCourtList(jwtToken, requestData);
     }
 }

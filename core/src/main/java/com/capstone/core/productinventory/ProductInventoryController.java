@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.productinventory.data.request.AddNewProductInventoryRequestData;
+import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryCenterFilterListRequestData;
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryManagementRequestData;
+import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryProductFilterListRequestData;
 import com.capstone.core.productinventory.data.request.UserProductInventoryListRequestData;
 import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryListProjection;
 
@@ -41,5 +43,17 @@ public class ProductInventoryController {
     ResponseEntity<Object> getCenterOwnerProductInventoryList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             CenterOwnerProductInventoryManagementRequestData requestData) {
         return productInventoryService.getCenterOwnerProductInventoryList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/filter/center/list")
+    ResponseEntity<Object> getCenterOwnerProductInventoryCenterFilterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerProductInventoryCenterFilterListRequestData requestData) {
+        return productInventoryService.getCenterOwnerProductInventoryCenterFilterList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/filter/product/list")
+    ResponseEntity<Object> getCenterOwnerProductInventoryProductFilterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerProductInventoryProductFilterListRequestData requestData) {
+        return productInventoryService.getCenterOwnerProductInventoryProductFilterList(jwtToken, requestData);
     }
 }

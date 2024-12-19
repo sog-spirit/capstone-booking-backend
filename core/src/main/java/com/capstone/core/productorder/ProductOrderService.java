@@ -14,10 +14,15 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.productinventory.ProductInventoryRepository;
+import com.capstone.core.productorder.data.request.CenterOwnerProductOrderCenterFilterListRequestData;
 import com.capstone.core.productorder.data.request.CenterOwnerProductOrderListRequestData;
+import com.capstone.core.productorder.data.request.CenterOwnerProductOrderUserFilterListRequestData;
 import com.capstone.core.productorder.data.request.ProductOrderRequestData;
 import com.capstone.core.productorder.data.request.ProductOrderRequestData.CartItem;
+import com.capstone.core.productorder.data.response.CenterOwnerProductOrderListResponseData;
+import com.capstone.core.productorder.projection.CenterOwnerProductOrderCenterFilterListProjection;
 import com.capstone.core.productorder.projection.CenterOwnerProductOrderListProjection;
+import com.capstone.core.productorder.projection.CenterOwnerProductOrderUserFilterListProjection;
 import com.capstone.core.productorder.specification.ProductOrderSpecification;
 import com.capstone.core.productorder.specification.criteria.ProductOrderCriteria;
 import com.capstone.core.productorderitem.ProductOrderItemRepository;
@@ -95,15 +100,68 @@ public class ProductOrderService {
 
         ProductOrderCriteria productOrderCriteria = new ProductOrderCriteria();
         productOrderCriteria.setCenterUserId(userId);
+        productOrderCriteria.setId(requestData.getId());
+        productOrderCriteria.setUserId(requestData.getUserId());
+        productOrderCriteria.setCreateTimestampFrom(requestData.getCreateTimestampFrom());
+        productOrderCriteria.setCreateTimestampTo(requestData.getCreateTimestampTo());
+        productOrderCriteria.setTotalFrom(requestData.getTotalFrom());
+        productOrderCriteria.setTotalTo(requestData.getTotalTo());
+        productOrderCriteria.setCenterId(requestData.getCenterId());
+        productOrderCriteria.setStatusId(requestData.getStatusId());
 
         List<Sort.Order> sortOrders = new ArrayList<>();
+        if (requestData.getIdSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getIdSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "id"));
+        }
+        if (requestData.getUserSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getUserSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "user"));
+        }
+        if (requestData.getCreateTimestampSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getCreateTimestampSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "createTimestamp"));
+        }
+        if (requestData.getTotalSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getTotalSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "total"));
+        }
+        if (requestData.getCenterSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getCenterSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "center"));
+        }
+        if (requestData.getStatusSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getStatusSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "status"));
+        }
 
         Sort sort = Sort.by(sortOrders);
 
-        Pageable pageable = PageRequest.of(Integer.parseInt("0"), Integer.parseInt("5"), sort);
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
 
         Page<CenterOwnerProductOrderListProjection> productOrderList = productOrderRepository.findBy(new ProductOrderSpecification(productOrderCriteria), q -> q.as(CenterOwnerProductOrderListProjection.class).sortBy(pageable.getSort()).page(pageable));
+        CenterOwnerProductOrderListResponseData responseData = new CenterOwnerProductOrderListResponseData();
+        responseData.setTotalPage(productOrderList.getTotalPages());
+        responseData.setProductOrderList(productOrderList.getContent());
 
-        return new ResponseEntity<>(productOrderList.getContent(), HttpStatus.OK);
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductOrderUserFilterList(String jwtToken, CenterOwnerProductOrderUserFilterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<CenterOwnerProductOrderUserFilterListProjection> userList = productOrderRepository.findCenterOwnerProductOrderUserFilterListDistinctUserIdByCenterUserIdAndUserUsernameContaining(userId, requestData.getQuery());
+        return new ResponseEntity<>(userList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductOrderCenterFilterList(String jwtToken, CenterOwnerProductOrderCenterFilterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<CenterOwnerProductOrderCenterFilterListProjection> centerList = productOrderRepository.findCenterOwnerProductOrderCenterFilterListDistinctCenterIdByCenterUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        return new ResponseEntity<>(centerList, HttpStatus.OK);
     }
 }

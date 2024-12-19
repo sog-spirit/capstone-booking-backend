@@ -21,6 +21,8 @@ public class CenterReviewSpecification implements Specification<CenterReviewTabl
             CriteriaBuilder criteriaBuilder) {
         return hasCenterOwnerId(centerReviewCriteria.getCenterOwnerId())
                 .and(hasUserId(centerReviewCriteria.getUserId()))
+                .and(hasCenterId(centerReviewCriteria.getCenterId()))
+                .and(hasId(centerReviewCriteria.getId()))
                 .toPredicate(root, query, criteriaBuilder);
     }
 
@@ -28,10 +30,6 @@ public class CenterReviewSpecification implements Specification<CenterReviewTabl
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (centerOwnerId != null) {
-                if (Long.class != query.getResultType()) {
-                    root.fetch("center", JoinType.INNER)
-                            .fetch("user", JoinType.INNER);
-                }
                 predicate = builder.equal(root.get("center").get("user").get("id"), centerOwnerId);
             }
             return predicate;
@@ -42,10 +40,27 @@ public class CenterReviewSpecification implements Specification<CenterReviewTabl
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (userId != null) {
-                if (Long.class != query.getResultType()) {
-                    root.fetch("user", JoinType.INNER);
-                }
                 predicate = builder.equal(root.get("user").get("id"), userId);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterReviewTable> hasCenterId(Long centerId) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (centerId != null) {
+                predicate = builder.equal(root.get("center").get("id"), centerId);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterReviewTable> hasId(Long id) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (id != null) {
+                predicate = builder.equal(root.get("id"), id);
             }
             return predicate;
         };

@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.capstone.core.productorder.data.request.CenterOwnerProductOrderCenterFilterListRequestData;
 import com.capstone.core.productorder.data.request.CenterOwnerProductOrderListRequestData;
+import com.capstone.core.productorder.data.request.CenterOwnerProductOrderUserFilterListRequestData;
 import com.capstone.core.productorder.data.request.ProductOrderRequestData;
 
 import jakarta.validation.Valid;
@@ -32,5 +34,17 @@ public class ProductOrderController {
     ResponseEntity<Object> getCenterOwnerProductOrderList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             CenterOwnerProductOrderListRequestData requestData) {
         return productOrderService.getCenterOwnerProductOrderList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/user/filter/list")
+    ResponseEntity<Object> getCenterOwnerProductOrderUserFilterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerProductOrderUserFilterListRequestData requestData) {
+        return productOrderService.getCenterOwnerProductOrderUserFilterList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/center/filter/list")
+    ResponseEntity<Object> getCenterOwnerProductOrderCenterFilterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerProductOrderCenterFilterListRequestData requestData) {
+        return productOrderService.getCenterOwnerProductOrderCenterFilterList(jwtToken, requestData);
     }
 }
