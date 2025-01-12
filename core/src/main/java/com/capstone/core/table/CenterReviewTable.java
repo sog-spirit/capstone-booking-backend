@@ -1,5 +1,7 @@
 package com.capstone.core.table;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,12 +19,16 @@ public class CenterReviewTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "\"content\"")
-    private String content;
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserTable user;
     @ManyToOne(optional = false)
     @JoinColumn(name = "center_id", nullable = false)
     private CenterTable center;
+    @Column(name = "\"content\"")
+    private String content;
+    private Long status;
+    private Long rating;
+    private LocalDateTime createTimestamp;
+    private LocalDateTime updateTimestamp;
 }

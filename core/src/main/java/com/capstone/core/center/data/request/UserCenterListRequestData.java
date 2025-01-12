@@ -10,4 +10,9 @@ import lombok.NoArgsConstructor;
 public class UserCenterListRequestData {
     private Integer pageNo;
     private Integer pageSize;
+
+    private String name;
+    private String address;
+    private Long priceFrom;
+    private Long priceTo;
 }

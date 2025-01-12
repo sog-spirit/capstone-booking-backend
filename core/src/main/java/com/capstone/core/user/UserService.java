@@ -1,25 +1,40 @@
 package com.capstone.core.user;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.role.RoleRepository;
 import com.capstone.core.table.RoleTable;
 import com.capstone.core.table.UserRoleTable;
 import com.capstone.core.table.UserTable;
+import com.capstone.core.user.data.AdminUserListRequestData;
+import com.capstone.core.user.data.AdminUserListResponseData;
 import com.capstone.core.user.data.DuplicateUsernamePasswordResponseData;
+import com.capstone.core.user.data.EditUserInfoRequestData;
+import com.capstone.core.user.data.EditUserPasswordRequestData;
 import com.capstone.core.user.data.InvalidRoleIdResponseData;
 import com.capstone.core.user.data.JwtTokenResponseData;
 import com.capstone.core.user.data.LoginFormRequestData;
 import com.capstone.core.user.data.RegisterFormRequestData;
+import com.capstone.core.user.projection.AdminUserListProjection;
+import com.capstone.core.user.projection.UserInfoProjection;
 import com.capstone.core.user.projection.ValidateUserProjection;
+import com.capstone.core.user.specification.UserSpecification;
+import com.capstone.core.user.specification.criteria.UserCriteria;
 import com.capstone.core.userrole.UserRoleRepository;
 import com.capstone.core.userrole.projection.UserRoleProjection;
 import com.capstone.core.util.consts.MessageConstsUtil;
@@ -87,6 +102,94 @@ public class UserService {
         responseData.setRefreshToken(refreshToken);
         responseData.setRole(userRole.getRoleName());
         responseData.setUsername(loginFormData.getUsername());
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getUserInfo(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        UserInfoProjection data = userRepository.findUserInfoById(userId);
+
+        return new ResponseEntity<>(data, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> editUserInfo(String jwtToken, EditUserInfoRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        UserTable user = userRepository.getReferenceById(userId);
+        user.setFirstName(requestData.getFirstName());
+        user.setLastName(requestData.getLastName());
+        userRepository.save(user);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> editUserPassword(String jwtToken, EditUserPasswordRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        UserTable user = userRepository.getReferenceById(userId);
+        user.setPassword(passwordEncoder.encode(requestData.getNewPassword()));
+        userRepository.save(user);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getAdminUserList(String jwtToken, AdminUserListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        UserCriteria filterCriteria = new UserCriteria();
+        filterCriteria.setUsernameFilter(requestData.getUsernameFilter());
+        filterCriteria.setPhoneFilter(requestData.getPhoneFilter());
+        filterCriteria.setEmailFilter(requestData.getEmailFilter());
+        filterCriteria.setFirstNameFilter(requestData.getFirstNameFilter());
+        filterCriteria.setLastNameFilter(requestData.getLastNameFilter());
+
+        List<Sort.Order> sortOrders = new ArrayList<>();
+        if (requestData.getUsernameSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getUsernameSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "username"));
+        }
+        if (requestData.getEmailSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getEmailSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "email"));
+        }
+        if (requestData.getPhoneSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getUsernameSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "phone"));
+        }
+        if (requestData.getFirstNameSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getFirstNameSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "firstName"));
+        }
+        if (requestData.getLastNameSortOrder() != null) {
+            sortOrders.add(new Sort.Order(requestData.getLastNameSortOrder().equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC, "lastName"));
+        }
+
+        Sort sort = Sort.by(sortOrders);
+
+        Pageable pageable = PageRequest.of(requestData.getPageNo(), requestData.getPageSize(), sort);
+
+        AdminUserListResponseData responseData = new AdminUserListResponseData();
+        Page<AdminUserListProjection> userList = userRepository.findBy(new UserSpecification(filterCriteria), q -> q.as(AdminUserListProjection.class).sortBy(pageable.getSort()).page(pageable));
+        responseData.setUserList(userList.getContent());
+        responseData.setTotalPage(userList.getTotalPages());
 
         return new ResponseEntity<>(responseData, HttpStatus.OK);
     }

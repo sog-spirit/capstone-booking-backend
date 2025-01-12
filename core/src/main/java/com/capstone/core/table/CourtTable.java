@@ -17,12 +17,10 @@ public class CourtTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "\"name\"")
-    private String name;
     @ManyToOne(optional = false)
     @JoinColumn(name = "center_id", nullable = false)
     private CenterTable center;
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private UserTable user;
+    @Column(name = "\"name\"")
+    private String name;
+    private Long status;
 }

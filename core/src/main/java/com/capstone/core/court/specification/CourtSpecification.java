@@ -18,32 +18,26 @@ public class CourtSpecification implements Specification<CourtTable> {
 
     @Override
     public Predicate toPredicate(Root<CourtTable> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
-        return hasCenterOwnerId(courtFilterCriteria.getCenterOwnerId())
-                .and(hasCenterId(courtFilterCriteria.getCenterId()))
+        return  hasCenterId(courtFilterCriteria.getCenterId())
+                .and(hasStatus(courtFilterCriteria.getStatus()))
                 .toPredicate(root, query, criteriaBuilder);
-    }
-
-    static Specification<CourtTable> hasCenterOwnerId(Long centerOwnerId) {
-        return (root, query, builder) -> {
-            Predicate predicate = null;
-            if (centerOwnerId != null) {
-                if (query.getResultType() != Long.class) {
-                    root.fetch("user", JoinType.INNER);
-                }
-                predicate = builder.equal(root.get("user").get("id"), centerOwnerId);
-            }
-            return predicate;
-        };
     }
 
     static Specification<CourtTable> hasCenterId(Long centerId) {
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (centerId != null) {
-                if (query.getResultType() != Long.class) {
-                    root.fetch("center", JoinType.INNER);
-                }
                 predicate = builder.equal(root.get("center").get("id"), centerId);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CourtTable> hasStatus(Long status) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (status != null) {
+                predicate = builder.equal(root.get("status"), status);
             }
             return predicate;
         };

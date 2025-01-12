@@ -11,6 +11,8 @@ public class CenterOwnerReviewListRequestData {
     private String idSortOrder;
     private String userSortOrder;
     private String centerSortOrder;
+    private String createTimestampSortOrder;
+    private String updateTimestampSortOrder;
 
     private Long id;
     private Long centerId;

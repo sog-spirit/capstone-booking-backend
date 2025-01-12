@@ -19,14 +19,18 @@ public class CenterTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "\"name\"")
-    private String name;
-    private String address;
     @ManyToOne(optional = false)
     @JoinColumn(name = "\"owner\"", nullable = false)
     private UserTable user;
+    @Column(name = "\"name\"")
+    private String name;
+    private String address;
     private Long fieldQuantity;
     private Long courtFee;
     private LocalTime openingTime;
     private LocalTime closingTime;
+    private Long status;
+    private Long reviewCount;
+    private Long recommendCount;
+    private Long notRecommendCount;
 }

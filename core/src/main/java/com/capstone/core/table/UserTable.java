@@ -25,4 +25,5 @@ public class UserTable {
     private String email;
     private LocalDateTime createTimestamp;
     private LocalDateTime updateTimestamp;
+    private Long status;
 }

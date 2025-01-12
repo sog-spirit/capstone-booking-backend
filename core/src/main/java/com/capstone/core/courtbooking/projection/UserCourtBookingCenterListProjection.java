@@ -1,7 +1,11 @@
 package com.capstone.core.courtbooking.projection;
 
 public interface UserCourtBookingCenterListProjection {
-    Center getCenter();
+    Court getCourt();
+
+    interface Court {
+        Center getCenter();
+    }
 
     interface Center {
         Long getId();

@@ -1,6 +1,6 @@
 package com.capstone.core.courtbooking.projection;
 
 public interface CenterListProjection {
-    Long getCenterId();
-    String getCenterName();
+    Long getId();
+    String getName();
 }

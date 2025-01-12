@@ -22,6 +22,11 @@ public class CenterSpecification implements Specification<CenterTable> {
     @Override
     public Predicate toPredicate(Root<CenterTable> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
         return hasCenterOwnerId(centerFilterCriteria.getCenterOwnerId())
+                .and(containName(centerFilterCriteria.getName()))
+                .and(containAddress(centerFilterCriteria.getAddress()))
+                .and(priceFrom(centerFilterCriteria.getPriceFrom()))
+                .and(priceTo(centerFilterCriteria.getPriceTo()))
+                .and(hasStatus(centerFilterCriteria.getStatus()))
                 .toPredicate(root, query, criteriaBuilder);
     }
 
@@ -29,10 +34,57 @@ public class CenterSpecification implements Specification<CenterTable> {
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (userId != null) {
-                if (Long.class != query.getResultType()) {
-                    root.fetch("user", JoinType.INNER);
-                }
                 predicate = builder.equal(root.get("user").get("id"), userId);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterTable> containName(String name) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (name != null) {
+                predicate = builder.like(root.get("name"), builder.literal("%" + name + "%"));
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterTable> containAddress(String address) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (address != null) {
+                predicate = builder.like(root.get("address"), builder.literal("%" + address + "%"));
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterTable> priceFrom(Long price) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (price != null) {
+                predicate = builder.greaterThanOrEqualTo(root.get("price"), price);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterTable> priceTo(Long price) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (price != null) {
+                predicate = builder.lessThanOrEqualTo(root.get("price"), price);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterTable> hasStatus(Long status) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (status != null) {
+                predicate = builder.equal(root.get("status"), status);
             }
             return predicate;
         };

@@ -2,8 +2,10 @@ package com.capstone.core.productinventory;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +16,8 @@ import com.capstone.core.productinventory.data.request.AddNewProductInventoryReq
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryCenterFilterListRequestData;
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryManagementRequestData;
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryProductFilterListRequestData;
+import com.capstone.core.productinventory.data.request.DeleteProductInventoryRequestData;
+import com.capstone.core.productinventory.data.request.EditProductInventoryRequestData;
 import com.capstone.core.productinventory.data.request.UserProductInventoryListRequestData;
 import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryListProjection;
 
@@ -31,6 +35,20 @@ public class ProductInventoryController {
     ResponseEntity<Object> addProductInventory(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             @RequestBody @Valid AddNewProductInventoryRequestData addNewProductInventoryRequestData) {
         return productInventoryService.addProductInventory(jwtToken, addNewProductInventoryRequestData);
+    }
+
+    @PutMapping
+    @Transactional
+    ResponseEntity<Object> editProductInventory(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestBody @Valid EditProductInventoryRequestData requestData) {
+        return productInventoryService.editProductInventory(jwtToken, requestData);
+    }
+
+    @DeleteMapping
+    @Transactional
+    ResponseEntity<Object> deleteProductInventory(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @RequestBody @Valid DeleteProductInventoryRequestData requestData) {
+        return productInventoryService.deleteProductInventory(jwtToken, requestData);
     }
 
     @GetMapping(value = "/user/list")

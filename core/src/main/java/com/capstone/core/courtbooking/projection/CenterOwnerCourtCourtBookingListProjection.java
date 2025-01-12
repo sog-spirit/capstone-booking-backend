@@ -6,4 +6,5 @@ public interface CenterOwnerCourtCourtBookingListProjection {
     Long getId();
     LocalTime getUsageTimeStart();
     LocalTime getUsageTimeEnd();
+    Long getStatus();
 }

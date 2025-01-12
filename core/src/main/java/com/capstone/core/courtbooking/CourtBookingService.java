@@ -1,7 +1,9 @@
 package com.capstone.core.courtbooking;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,41 +19,59 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.capstone.core.center.CenterRepository;
 import com.capstone.core.court.CourtRepository;
 import com.capstone.core.court.projection.CourtCenterWorkingTimeProjection;
 import com.capstone.core.courtbooking.data.request.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCancelCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCheckoutCourtBookingRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingCenterListRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingCourtListRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingDetailRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingUserListRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtCourtBookingListRequestData;
+import com.capstone.core.courtbooking.data.request.CenterOwnerStatisticsCenterRequestData;
+import com.capstone.core.courtbooking.data.request.UserCancelCourtBookingRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterCourtBookingListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCenterListFromUserOrderRequestData;
+import com.capstone.core.courtbooking.data.request.UserCourtBookingCenterIdRequestData;
 import com.capstone.core.courtbooking.data.request.UserCourtBookingCenterListRequestData;
 import com.capstone.core.courtbooking.data.request.UserCourtBookingCourtListRequestData;
+import com.capstone.core.courtbooking.data.request.UserCourtBookingDetailRequestData;
 import com.capstone.core.courtbooking.data.request.UserCourtBookingListRequestData;
+import com.capstone.core.courtbooking.data.request.UserCourtCourtBookingListRequestData;
+import com.capstone.core.courtbooking.data.request.UserCourtDateCourtBookingRequestData;
 import com.capstone.core.courtbooking.data.response.CenterOwnerCourtBookingListResponseData;
 import com.capstone.core.courtbooking.data.response.CenterOwnerCourtCourtBookingListResponseData;
 import com.capstone.core.courtbooking.data.response.UserCourtBookingListResponseData;
+import com.capstone.core.courtbooking.data.response.UserCourtCourtBookingListResponseData;
+import com.capstone.core.courtbooking.data.response.UserCourtDateCourtBookingListResponseData;
 import com.capstone.core.courtbooking.projection.CenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingCenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingCourtListProjection;
+import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingDetailProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingUserListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtCourtBookingListProjection;
+import com.capstone.core.courtbooking.projection.CenterOwnerStatisticsCenterProjection;
 import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
+import com.capstone.core.courtbooking.projection.UserCourtBookingCenterIdProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingCenterListProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingCourtListProjection;
+import com.capstone.core.courtbooking.projection.UserCourtBookingDetailProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingListProjection;
+import com.capstone.core.courtbooking.projection.UserCourtCourtBookingListProjection;
 import com.capstone.core.courtbooking.specification.CourtBookingSpecification;
 import com.capstone.core.courtbooking.specification.criteria.CourtBookingCriteria;
-import com.capstone.core.table.BookingOrderStatusTable;
 import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.CourtBookingTable;
 import com.capstone.core.table.CourtTable;
 import com.capstone.core.table.UserTable;
-import com.capstone.core.util.consts.BookingOrderStatus;
+import com.capstone.core.util.consts.CourtBookingStatus;
+import com.capstone.core.util.consts.CourtStatus;
 import com.capstone.core.util.security.jwt.JwtUtil;
+import com.capstone.core.util.time.TimeUtils;
 
 import lombok.AllArgsConstructor;
 
@@ -60,19 +80,19 @@ import lombok.AllArgsConstructor;
 public class CourtBookingService {
     private CourtBookingRepository courtBookingRepository;
     private CourtRepository courtRepository;
+    private CenterRepository centerRepository;
 
-    ResponseEntity<Object> addNewCourtBooking(String jwtToken, AddNewCourtBookingRequestData addNewCourtBookingRequestData) {
+    ResponseEntity<Object> addUserNewCourtBooking(String jwtToken, AddNewCourtBookingRequestData addNewCourtBookingRequestData) {
         Long userId;
         try {
             userId = JwtUtil.getUserIdFromToken(jwtToken);
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        CourtBookingTable courtBooking = new CourtBookingTable();
 
-        CenterTable center = new CenterTable();
-        center.setId(addNewCourtBookingRequestData.getCenterId());
-        courtBooking.setCenter(center);
+        CenterTable center = centerRepository.getReferenceById(addNewCourtBookingRequestData.getCenterId());
+
+        CourtBookingTable courtBooking = new CourtBookingTable();
 
         CourtTable court = new CourtTable();
         court.setId(addNewCourtBookingRequestData.getCourtId());
@@ -85,16 +105,96 @@ public class CourtBookingService {
         courtBooking.setUsageDate(addNewCourtBookingRequestData.getUsageDate());
         courtBooking.setUsageTimeStart(addNewCourtBookingRequestData.getUsageTimeStart());
         courtBooking.setUsageTimeEnd(addNewCourtBookingRequestData.getUsageTimeEnd());
-        BookingOrderStatusTable bookingOrderStatus = new BookingOrderStatusTable();
-        bookingOrderStatus.setId(BookingOrderStatus.PENDING.getValue());
-        courtBooking.setStatus(bookingOrderStatus);
+        courtBooking.setStatus(CourtBookingStatus.PENDING.getValue());
         courtBooking.setCreateTimestamp(LocalDateTime.now());
+        courtBooking.setCourtFee(TimeUtils.calculateIntervals(addNewCourtBookingRequestData.getUsageTimeStart(), addNewCourtBookingRequestData.getUsageTimeEnd(), 15) * (center.getCourtFee() / 4));
+        courtBooking.setProductFee(Long.parseLong("0"));
+
         courtBookingRepository.save(courtBooking);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> addCenterOwnerNewCourtBooking(String jwtToken, AddNewCourtBookingRequestData addNewCourtBookingRequestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CenterTable center = centerRepository.getReferenceById(addNewCourtBookingRequestData.getCenterId());
+
+        CourtBookingTable courtBooking = new CourtBookingTable();
+
+        CourtTable court = new CourtTable();
+        court.setId(addNewCourtBookingRequestData.getCourtId());
+        courtBooking.setCourt(court);
+
+        UserTable user = new UserTable();
+        user.setId(userId);
+        courtBooking.setUser(user);
+
+        courtBooking.setUsageDate(addNewCourtBookingRequestData.getUsageDate());
+        courtBooking.setUsageTimeStart(addNewCourtBookingRequestData.getUsageTimeStart());
+        courtBooking.setUsageTimeEnd(addNewCourtBookingRequestData.getUsageTimeEnd());
+        courtBooking.setStatus(CourtBookingStatus.UNAVAILABLE.getValue());
+        courtBooking.setCreateTimestamp(LocalDateTime.now());
+        courtBooking.setCourtFee(Long.parseLong("0"));
+        courtBooking.setProductFee(Long.parseLong("0"));
+
+        courtBookingRepository.save(courtBooking);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> userCancelCourtBooking(String jwtToken, UserCancelCourtBookingRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CourtBookingTable courtBooking = courtBookingRepository.getReferenceById(requestData.getId());
+        courtBooking.setStatus(CourtBookingStatus.CANCELLED.getValue());
+        courtBookingRepository.save(courtBooking);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> centerOwnerCancelCourtBooking(String jwtToken, CenterOwnerCancelCourtBookingRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CourtBookingTable courtBooking = courtBookingRepository.getReferenceById(requestData.getId());
+        courtBooking.setStatus(CourtBookingStatus.CANCELLED.getValue());
+        courtBookingRepository.save(courtBooking);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> centerOwnerCheckoutCourtBooking(String jwtToken, CenterOwnerCheckoutCourtBookingRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CourtBookingTable courtBooking = courtBookingRepository.getReferenceById(requestData.getId());
+        courtBooking.setStatus(CourtBookingStatus.BOOKED.getValue());
+        courtBookingRepository.save(courtBooking);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     ResponseEntity<Object> getUserCenterCourtBookingList(String jwtToken, UserCenterCourtBookingListRequestData requestData) {
-        List<CourtBookingListProjection> courtBookingList = courtBookingRepository.findByCenterIdAndCourtId(requestData.getCenterId(), requestData.getCourtId());
+        List<CourtBookingListProjection> courtBookingList = courtBookingRepository.findByCourtCenterIdAndCourtId(requestData.getCenterId(), requestData.getCourtId());
         return new ResponseEntity<>(courtBookingList, HttpStatus.OK);
     }
 
@@ -230,7 +330,7 @@ public class CourtBookingService {
         } catch (JWTVerificationException jwtVerificationException) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        List<CenterListProjection> centerList = courtBookingRepository.findCenterListDistinctCenterIdByUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        List<CenterListProjection> centerList = courtBookingRepository.findNotReviewedCenterList(userId, requestData.getQuery());
         return new ResponseEntity<>(centerList, HttpStatus.OK);
     }
 
@@ -242,8 +342,8 @@ public class CourtBookingService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        CourtCenterWorkingTimeProjection workingTime = courtRepository.findWorkingTimeById(requestData.getCourtId());
-        List<CenterOwnerCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findCourtBookingListByCourtId(requestData.getCourtId());
+        CourtCenterWorkingTimeProjection workingTime = courtRepository.findWorkingTimeByIdAndStatus(requestData.getCourtId(), CourtStatus.ACTIVE.getValue());
+        List<CenterOwnerCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findCenterOwnerCourtCourtBookingListByCourtIdAndUsageDateAndStatusNotOrderByUsageTimeStartAscUsageTimeEndAsc(requestData.getCourtId(), requestData.getUsageDate(), CourtBookingStatus.CANCELLED.getValue());
 
         List<Object> timeMarks = new ArrayList<>();
         Map<String, Object> timeMarksItem;
@@ -262,6 +362,7 @@ public class CourtBookingService {
             Long courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
             LocalTime bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
             LocalTime bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+            String status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
 
             do {
                 if (currentTime.equals(bookedStart)) {
@@ -269,6 +370,7 @@ public class CourtBookingService {
                     timeMarksItem = new HashMap<>();
                     timeMarksItem.put("courtBookingId", courtBookingId);
                     timeMarksItem.put("span", bookedSpan);
+                    timeMarksItem.put("status", status);
                     timeMarks.add(timeMarksItem);
                     currentTime = bookedEnd;
 
@@ -277,6 +379,7 @@ public class CourtBookingService {
                         courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
                         bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
                         bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+                        status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
                     }
                 } else {
                     timeMarksItem = new HashMap<>();
@@ -293,6 +396,138 @@ public class CourtBookingService {
         return new ResponseEntity<>(responseData, HttpStatus.OK);
     }
 
+    ResponseEntity<Object> getUserCourtCourtBookingList(String jwtToken, UserCourtCourtBookingListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CourtCenterWorkingTimeProjection workingTime = courtRepository.findWorkingTimeByIdAndStatus(requestData.getCourtId(), CourtStatus.ACTIVE.getValue());
+        List<UserCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findUserCourtCourtBookingListByUserIdAndCourtIdAndUsageDateAndStatusNotOrderByUsageTimeStartAscUsageTimeEndAsc(userId, requestData.getCourtId(), requestData.getDate(), CourtBookingStatus.CANCELLED.getValue());
+
+        List<Object> timeMarks = new ArrayList<>();
+        Map<String, Object> timeMarksItem;
+        LocalTime currentTime = workingTime.getCenter().getOpeningTime();
+        int intervalMinutes = 15;
+
+        if (courtBookingList.isEmpty()) {
+            do {
+                timeMarksItem = new HashMap<>();
+                timeMarksItem.put("span", 1);
+                timeMarks.add(timeMarksItem);
+                currentTime = currentTime.plusMinutes(intervalMinutes);
+            } while (!currentTime.isAfter(workingTime.getCenter().getClosingTime()));
+        } else {
+            int courtBookingListIndex = 0;
+            Long courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
+            Long courtBookingUserId = courtBookingList.get(courtBookingListIndex).getUserId();
+            LocalTime bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
+            LocalTime bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+            String status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
+
+            do {
+                if (currentTime.equals(bookedStart)) {
+                    int bookedSpan = (int) (bookedEnd.toSecondOfDay() - bookedStart.toSecondOfDay()) / (intervalMinutes * 60);
+                    timeMarksItem = new HashMap<>();
+                    if (userId == courtBookingUserId) {
+                        timeMarksItem.put("courtBookingId", courtBookingId);
+                    }
+                    timeMarksItem.put("span", bookedSpan);
+                    timeMarksItem.put("status", status);
+                    timeMarks.add(timeMarksItem);
+                    currentTime = bookedEnd;
+
+                    courtBookingListIndex++;
+                    if (courtBookingListIndex < courtBookingList.size()) {
+                        courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
+                        bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
+                        bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+                        status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
+                    }
+                } else {
+                    timeMarksItem = new HashMap<>();
+                    timeMarksItem.put("span", 1);
+                    timeMarks.add(timeMarksItem);
+                    currentTime = currentTime.plusMinutes(intervalMinutes);
+                }
+            } while (!currentTime.isAfter(workingTime.getCenter().getClosingTime()));
+        }
+
+        UserCourtCourtBookingListResponseData responseData = new UserCourtCourtBookingListResponseData();
+        responseData.setTimeMarks(timeMarks);
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getUserCourtDateCourtBookingList(String jwtToken, UserCourtDateCourtBookingRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CourtCenterWorkingTimeProjection workingTime = courtRepository.findWorkingTimeByIdAndStatus(requestData.getCourtId(), CourtStatus.ACTIVE.getValue());
+        List<UserCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findUserCourtCourtBookingListByUserIdAndCourtIdAndUsageDateAndStatusNotOrderByUsageTimeStartAscUsageTimeEndAsc(userId, requestData.getCourtId(), requestData.getUsageDate(), CourtBookingStatus.CANCELLED.getValue());
+
+        List<Object> timeMarks = new ArrayList<>();
+        Map<String, Object> timeMarksItem;
+        LocalTime currentTime = workingTime.getCenter().getOpeningTime();
+        int intervalMinutes = 15;
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        if (courtBookingList.isEmpty()) {
+            do {
+                timeMarksItem = new HashMap<>();
+                timeMarksItem.put("time", String.format("%s-%s", currentTime.format(timeFormatter), currentTime.plusMinutes(intervalMinutes).format(timeFormatter)));
+                timeMarksItem.put("status", "Available");
+                timeMarks.add(timeMarksItem);
+                currentTime = currentTime.plusMinutes(intervalMinutes);
+            } while (!currentTime.isAfter(workingTime.getCenter().getClosingTime()));
+        } else {
+            int courtBookingListIndex = 0;
+            Long courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
+            LocalTime bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
+            LocalTime bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+            String status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
+
+            do {
+                if (currentTime.equals(bookedStart) ||
+                        (currentTime.isAfter(bookedStart) && currentTime.isBefore(bookedEnd))) {
+                    int bookedSpan = (int) (bookedEnd.toSecondOfDay() - bookedStart.toSecondOfDay()) / (intervalMinutes * 60);
+                    for (int i = 1; i <= bookedSpan; i++) {
+                        timeMarksItem = new HashMap<>();
+                        timeMarksItem.put("status", status);
+                        timeMarksItem.put("time", String.format("%s-%s", currentTime.format(timeFormatter), currentTime.plusMinutes(intervalMinutes).format(timeFormatter)));
+                        timeMarks.add(timeMarksItem);
+                        currentTime = currentTime.plusMinutes(intervalMinutes);
+                    }
+                    
+                    courtBookingListIndex++;
+                    if (courtBookingListIndex < courtBookingList.size()) {
+                        courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
+                        bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
+                        bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
+                        status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
+                    }
+                } else {
+                    timeMarksItem = new HashMap<>();
+                    timeMarksItem.put("time", String.format("%s-%s", currentTime.format(timeFormatter), currentTime.plusMinutes(intervalMinutes).format(timeFormatter)));
+                    timeMarksItem.put("status", "Available");
+                    timeMarks.add(timeMarksItem);
+                    currentTime = currentTime.plusMinutes(intervalMinutes);
+                }
+            } while (!currentTime.isAfter(workingTime.getCenter().getClosingTime()));
+        }
+
+        UserCourtDateCourtBookingListResponseData responseData = new UserCourtDateCourtBookingListResponseData();
+        responseData.setTimeMarks(timeMarks);
+
+        return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
     ResponseEntity<Object> getCenterOwnerCourtBookingCenterList(String jwtToken, CenterOwnerCourtBookingCenterListRequestData requestData) {
         Long userId;
         try {
@@ -301,7 +536,7 @@ public class CourtBookingService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CenterOwnerCourtBookingCenterListProjection> centerList = courtBookingRepository.findCenterOwnerCourtBookingCenterListDistinctCenterByCenterUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        List<CenterOwnerCourtBookingCenterListProjection> centerList = courtBookingRepository.findCenterOwnerCourtBookingCenterListDistinctCourtCenterIdByCourtCenterUserIdAndCourtCenterNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(centerList, HttpStatus.OK);
     }
 
@@ -313,7 +548,7 @@ public class CourtBookingService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CenterOwnerCourtBookingCourtListProjection> courtList = courtBookingRepository.findCenterOwnerCourtBookingCourtListDistinctCourtByCenterUserIdAndCourtNameContaining(userId, requestData.getQuery());
+        List<CenterOwnerCourtBookingCourtListProjection> courtList = courtBookingRepository.findCenterOwnerCourtBookingCourtListDistinctCourtIdByCourtCenterUserIdAndCourtNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(courtList, HttpStatus.OK);
     }
 
@@ -325,7 +560,7 @@ public class CourtBookingService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CenterOwnerCourtBookingUserListProjection> userList = courtBookingRepository.findCenterOwnerCourtBookingUserListDistinctUserByCenterUserIdAndUserUsernameContaining(userId, requestData.getQuery());
+        List<CenterOwnerCourtBookingUserListProjection> userList = courtBookingRepository.findCenterOwnerCourtBookingUserListDistinctUserIdByCourtCenterUserIdAndUserUsernameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(userList, HttpStatus.OK);
     }
 
@@ -337,7 +572,7 @@ public class CourtBookingService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<UserCourtBookingCenterListProjection> centerList = courtBookingRepository.findUserCourtBookingCenterListDistinctCenterIdByUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        List<UserCourtBookingCenterListProjection> centerList = courtBookingRepository.findUserCourtBookingCenterListDistinctCourtCenterIdByUserIdAndCourtCenterNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(centerList, HttpStatus.OK);
     }
 
@@ -351,5 +586,111 @@ public class CourtBookingService {
 
         List<UserCourtBookingCourtListProjection> courtList = courtBookingRepository.findUserCourtBookingCourtListDistinctCourtIdByUserIdAndCourtNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<>(courtList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getUserCourtBookingDetail(String jwtToken, UserCourtBookingDetailRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        UserCourtBookingDetailProjection courtBookingDetail = courtBookingRepository.findUserCourtBookingDetailById(requestData.getCourtBookingId());
+        return new ResponseEntity<>(courtBookingDetail, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerCourtBookingDetail(String jwtToken, CenterOwnerCourtBookingDetailRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        CenterOwnerCourtBookingDetailProjection courtBookingDetail = courtBookingRepository.findCenterOwnerCourtBookingDetailById(requestData.getCourtBookingId());
+        return new ResponseEntity<>(courtBookingDetail, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getUserCourtBookingCenterId(String jwtToken, UserCourtBookingCenterIdRequestData requestData) {
+        UserCourtBookingCenterIdProjection centerId = courtBookingRepository.findUserCourtBookingCenterIdById(requestData.getCourtBookingId());
+        return new ResponseEntity<>(centerId, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerStatisticsCenter(String jwtToken, CenterOwnerStatisticsCenterRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (requestData.getFrequency().equals("Daily")) {
+            List<Map<String, Object>> result = new ArrayList<>();
+            Map<String, Object> resultItem;
+
+            LocalDate date = LocalDate.now().minusDays(requestData.getRange() - 1);
+
+            for (long i = 1; i <= requestData.getRange(); i++) {
+                CenterOwnerStatisticsCenterProjection queryData = courtBookingRepository.findCenterOwnerStatisticsCenterDaily(userId, requestData.getCenterId(), date);
+
+                resultItem = new HashMap<>();
+                resultItem.put("label", date);
+                resultItem.put("courtFee", queryData.getCourtFee());
+                resultItem.put("centerFee", queryData.getProductFee());
+
+                result.add(resultItem);
+
+                date = date.plusDays(1);
+            }
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else if (requestData.getFrequency().equals("Monthly")) {
+            List<Map<String, Object>> result = new ArrayList<>();
+            Map<String, Object> resultItem;
+
+            YearMonth yearMonth = YearMonth.now().minusMonths(requestData.getRange() - 1);
+
+            for (long i = 1; i <= requestData.getRange(); i++) {
+                LocalDate firstDayOfMonth = yearMonth.atDay(1);
+                LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+                CenterOwnerStatisticsCenterProjection queryData = courtBookingRepository.findCenterOwnerStatisticsCenterMonthly(userId, requestData.getCenterId(), firstDayOfMonth, lastDayOfMonth);
+
+                resultItem = new HashMap<>();
+                resultItem.put("label", yearMonth);
+                resultItem.put("courtFee", queryData.getCourtFee());
+                resultItem.put("centerFee", queryData.getProductFee());
+
+                result.add(resultItem);
+
+                yearMonth = yearMonth.plusMonths(1);
+            }
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else if (requestData.getFrequency().equals("Yearly")) {
+            List<Map<String, Object>> result = new ArrayList<>();
+            Map<String, Object> resultItem;
+
+            YearMonth yearMonth = YearMonth.now().minusYears(requestData.getRange() - 1);
+
+            for (long i = 1; i <= requestData.getRange(); i++) {
+                LocalDate firstDayOfYear = LocalDate.of(yearMonth.getYear(), 1, 1);
+                LocalDate lastDayOfYear = LocalDate.of(yearMonth.getYear(), 12, 31);
+                CenterOwnerStatisticsCenterProjection queryData = courtBookingRepository.findCenterOwnerStatisticsCenterMonthly(userId, requestData.getCenterId(), firstDayOfYear, lastDayOfYear);
+
+                resultItem = new HashMap<>();
+                resultItem.put("label", yearMonth.getYear());
+                resultItem.put("courtFee", queryData.getCourtFee());
+                resultItem.put("centerFee", queryData.getProductFee());
+
+                result.add(resultItem);
+
+                yearMonth = yearMonth.plusYears(1);
+            }
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

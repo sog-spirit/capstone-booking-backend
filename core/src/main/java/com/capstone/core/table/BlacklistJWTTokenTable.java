@@ -13,12 +13,11 @@ import lombok.Data;
 @Table(name = "blacklist_jwt_token", schema = "public")
 @Data
 public class BlacklistJWTTokenTable {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String jwtToken;
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserTable user;
+    private String jwtToken;
 }

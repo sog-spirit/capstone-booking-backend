@@ -23,6 +23,7 @@ public class CenterReviewSpecification implements Specification<CenterReviewTabl
                 .and(hasUserId(centerReviewCriteria.getUserId()))
                 .and(hasCenterId(centerReviewCriteria.getCenterId()))
                 .and(hasId(centerReviewCriteria.getId()))
+                .and(hasStatus(centerReviewCriteria.getStatus()))
                 .toPredicate(root, query, criteriaBuilder);
     }
 
@@ -61,6 +62,16 @@ public class CenterReviewSpecification implements Specification<CenterReviewTabl
             Predicate predicate = null;
             if (id != null) {
                 predicate = builder.equal(root.get("id"), id);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<CenterReviewTable> hasStatus(Long status) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (status != null) {
+                predicate = builder.equal(root.get("status"), status);
             }
             return predicate;
         };

@@ -33,6 +33,13 @@ public class FileUtils {
         writeFile(multipartFile, fileId, baseFolder, fileName);
     }
 
+    public static void deleteFile(String filePath) throws IOException {
+        File file = new File(filePath);
+        if (!file.delete()) {
+            throw new IOException("Unable to delete");
+        }
+    }
+
     public static String getImageFilePath(Long fileId, String baseFolder, String fileName) {
         return new StringBuffer()
                 .append(ROOT_FILE_PATH)

@@ -1,8 +1,13 @@
 package com.capstone.core.center;
 
+import java.io.IOException;
+
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,9 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.capstone.core.center.data.request.AddNewCenterRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterDropdownRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterListRequestData;
-import com.capstone.core.center.data.request.CenterOwnerCenterWorkingTimeRequestData;
+import com.capstone.core.center.data.request.CenterOwnerStatisticsCenterListRequestData;
+import com.capstone.core.center.data.request.DeleteCenterRequestData;
+import com.capstone.core.center.data.request.CenterOwnerCenterInfoRequestData;
 import com.capstone.core.center.data.request.EditCenterRequestData;
 import com.capstone.core.center.data.request.UserCenterListRequestData;
+import com.capstone.core.center.data.request.UserCenterInfoRequestData;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -27,18 +35,25 @@ public class CenterController {
 
     private CenterService centerService;
 
-    @PostMapping
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Transactional
     public ResponseEntity<Object> addNewCenter(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestBody @Valid AddNewCenterRequestData requestData) {
+            @ModelAttribute @Valid AddNewCenterRequestData requestData) throws IOException {
         return centerService.addNewCenter(jwtToken, requestData);
     }
 
-    @PutMapping
+    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @Transactional
     public ResponseEntity<Object> editCenter(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            @RequestBody @Valid EditCenterRequestData editCenterRequestData) {
+            @ModelAttribute @Valid EditCenterRequestData editCenterRequestData) throws IOException {
         return centerService.editCenter(jwtToken, editCenterRequestData);
+    }
+
+    @DeleteMapping(value = "/center-owner/closed")
+    @Transactional
+    ResponseEntity<Object> deleteCenter(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            @ModelAttribute @Valid DeleteCenterRequestData requestData) {
+        return centerService.deleteCenter(jwtToken, requestData);
     }
 
     @GetMapping(value = "/user/list")
@@ -59,9 +74,21 @@ public class CenterController {
         return centerService.getCenterOwnerCenterDropdownList(jwtToken, requestData);
     }
 
-    @GetMapping(value = "/center-owner/working-time")
-    public ResponseEntity<Object> getCenterOwnerCenterWorkingTime(@RequestHeader(name = "Authorization", required = true) String jwtToken,
-            CenterOwnerCenterWorkingTimeRequestData requestData) {
-        return centerService.getCenterOwnerCenterWorkingTime(jwtToken, requestData);
+    @GetMapping(value = "/center-owner/info")
+    public ResponseEntity<Object> getCenterOwnerCenterInfo(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCenterInfoRequestData requestData) {
+        return centerService.getCenterOwnerCenterInfo(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/user/info")
+    public ResponseEntity<Object> getUserCenterInfo(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            UserCenterInfoRequestData requestData) {
+        return centerService.getUserCenterInfo(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/statistics/center/list")
+    ResponseEntity<Object> getCenterOwnerStatisticsCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerStatisticsCenterListRequestData requestData) {
+        return centerService.getCenterOwnerStatisticsCenterList(jwtToken, requestData);
     }
 }

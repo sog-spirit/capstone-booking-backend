@@ -18,6 +18,7 @@ import com.capstone.core.product.data.request.CreateProductRequestData;
 import com.capstone.core.product.data.request.EditProductRequestData;
 import com.capstone.core.product.data.request.ProductListDropdownRequestData;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -29,6 +30,7 @@ public class ProductController {
     private ProductService productService;
 
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @Transactional
     ResponseEntity<Object> createProduct(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             @ModelAttribute @Valid CreateProductRequestData createCustomerServiceRequestData) throws IOException {
         return productService.createProduct(jwtToken, createCustomerServiceRequestData);

@@ -17,10 +17,11 @@ public class ProductTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "\"name\"")
-    private String name;
-    private Long price;
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserTable user;
+    @Column(name = "\"name\"")
+    private String name;
+    private Long price;
+    private Long status;
 }

@@ -12,4 +12,5 @@ public class CenterReviewCriteria {
     private Long id;
     private Long userId;
     private Long centerId;
+    private Long status;
 }

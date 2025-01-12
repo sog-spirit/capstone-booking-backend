@@ -7,13 +7,12 @@ import java.time.LocalTime;
 public interface CenterOwnerCourtBookingListProjection {
     Long getId();
     LocalDateTime getCreateTimestamp();
-    Center getCenter();
     Court getCourt();
     User getUser();
     LocalDate getUsageDate();
     LocalTime getUsageTimeStart();
     LocalTime getUsageTimeEnd();
-    Status getStatus();
+    Long getStatus();
 
     interface Center {
         String getName();
@@ -21,13 +20,10 @@ public interface CenterOwnerCourtBookingListProjection {
 
     interface Court {
         String getName();
+        Center getCenter();
     }
 
     interface User {
         String getUsername();
-    }
-
-    interface Status {
-        String getName();
     }
 }

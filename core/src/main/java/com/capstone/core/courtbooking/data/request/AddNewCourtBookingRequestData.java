@@ -16,4 +16,5 @@ public class AddNewCourtBookingRequestData {
     private LocalDate usageDate;
     private LocalTime usageTimeStart;
     private LocalTime usageTimeEnd;
+    private Long courtFee;
 }

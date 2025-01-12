@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 public class UserCenterReviewListRequestData {
     private String idSortOrder;
     private String centerSortOrder;
+    private String createTimestampSortOrder;
+    private String updateTimestampSortOrder;
 
     private Long id;
     private Long centerId;

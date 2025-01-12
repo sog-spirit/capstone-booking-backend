@@ -43,7 +43,7 @@ public class CourtBookingSpecification implements Specification<CourtBookingTabl
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (userId != null) {
-                predicate = builder.equal(root.get("user").get("id"), userId);
+                predicate = builder.equal(root.get("court").get("center").get("user").get("id"), userId);
             }
             return predicate;
         };
@@ -53,7 +53,7 @@ public class CourtBookingSpecification implements Specification<CourtBookingTabl
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (userId != null) {
-                predicate = builder.equal(root.get("center").get("user").get("id"), userId);
+                predicate = builder.equal(root.get("court").get("center").get("user").get("id"), userId);
             }
             return predicate;
         };
@@ -93,7 +93,7 @@ public class CourtBookingSpecification implements Specification<CourtBookingTabl
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (centerId != null) {
-                predicate = builder.equal(root.get("center").get("id"), centerId);
+                predicate = builder.equal(root.get("court").get("center").get("id"), centerId);
             }
             return predicate;
         };
@@ -173,7 +173,7 @@ public class CourtBookingSpecification implements Specification<CourtBookingTabl
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (statusId != null) {
-                predicate = builder.equal(root.get("status").get("id"), statusId);
+                predicate = builder.equal(root.get("status"), statusId);
             }
             return predicate;
         };

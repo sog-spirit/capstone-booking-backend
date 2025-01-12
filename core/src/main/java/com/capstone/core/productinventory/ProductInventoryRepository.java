@@ -14,8 +14,8 @@ import com.capstone.core.table.ProductInventoryTable;
 
 @Repository
 public interface ProductInventoryRepository extends JpaRepository<ProductInventoryTable, Long>, JpaSpecificationExecutor<ProductInventoryTable> {
-    List<CenterOwnerProductInventoryListProjection> findByUserId(Long userId);
+    List<CenterOwnerProductInventoryListProjection> findByCenterUserId(Long userId);
     List<UserProductOrderPageListProjection> findUserProductOrderPageListByCenterId(Long centerId);
-    List<CenterOwnerProductInventoryCenterFilterListProjection> findCenterOwnerProductInventoryCenterFilterListDistinctCenterIdByUserIdAndCenterNameContaining(Long userId, String centerName);
-    List<CenterOwnerProductInventoryProductFilterListInterface> findCenterOwnerProductInventoryProductFilterListDistinctProductIdByUserIdAndProductNameContaining(Long userId, String centerName);
+    List<CenterOwnerProductInventoryCenterFilterListProjection> findCenterOwnerProductInventoryCenterFilterListDistinctCenterIdByCenterUserIdAndCenterNameContaining(Long userId, String centerName);
+    List<CenterOwnerProductInventoryProductFilterListInterface> findCenterOwnerProductInventoryProductFilterListDistinctProductIdByCenterUserIdAndProductNameContaining(Long userId, String centerName);
 }

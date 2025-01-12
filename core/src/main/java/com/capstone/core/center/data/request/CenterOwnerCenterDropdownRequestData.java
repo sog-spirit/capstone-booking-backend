@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CenterOwnerCenterDropdownRequestData {
     private String query;
+    private Long productId;
 }

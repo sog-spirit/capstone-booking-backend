@@ -20,20 +20,17 @@ public class CourtBookingTable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private LocalDateTime createTimestamp;
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "center_id", nullable = false)
-    private CenterTable center;
     @ManyToOne(optional = false)
     @JoinColumn(name = "court_id", nullable = false)
     private CourtTable court;
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserTable user;
+    private Long status;
+    private LocalDateTime createTimestamp;
     private LocalDate usageDate;
     private LocalTime usageTimeStart;
     private LocalTime usageTimeEnd;
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "status", nullable = false)
-    private BookingOrderStatusTable status;
+    private Long courtFee;
+    private Long productFee;
 }

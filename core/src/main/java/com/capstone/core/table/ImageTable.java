@@ -21,4 +21,5 @@ public class ImageTable {
     private String altText;
     private String contentType;
     private LocalDateTime createdAt;
+    private Long status;
 }

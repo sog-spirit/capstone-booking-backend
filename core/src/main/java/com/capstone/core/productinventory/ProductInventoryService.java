@@ -17,6 +17,8 @@ import com.capstone.core.productinventory.data.request.AddNewProductInventoryReq
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryCenterFilterListRequestData;
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryManagementRequestData;
 import com.capstone.core.productinventory.data.request.CenterOwnerProductInventoryProductFilterListRequestData;
+import com.capstone.core.productinventory.data.request.DeleteProductInventoryRequestData;
+import com.capstone.core.productinventory.data.request.EditProductInventoryRequestData;
 import com.capstone.core.productinventory.data.request.UserProductInventoryListRequestData;
 import com.capstone.core.productinventory.data.response.CenterOwnerProductInventoryManagementResponseData;
 import com.capstone.core.productinventory.projection.CenterOwnerProductInventoryCenterFilterListProjection;
@@ -29,6 +31,7 @@ import com.capstone.core.table.CenterTable;
 import com.capstone.core.table.ProductInventoryTable;
 import com.capstone.core.table.ProductTable;
 import com.capstone.core.table.UserTable;
+import com.capstone.core.util.consts.ProductInventoryStatus;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
 import jakarta.persistence.criteria.Expression;
@@ -49,6 +52,7 @@ public class ProductInventoryService {
         }
         ProductInventoryTable newProductInventory = new ProductInventoryTable();
         newProductInventory.setQuantity(addNewProductInventoryRequestData.getQuantity());
+        newProductInventory.setStatus(ProductInventoryStatus.ACTIVE.getValue());
 
         ProductTable product = new ProductTable();
         product.setId(addNewProductInventoryRequestData.getProductId());
@@ -58,11 +62,37 @@ public class ProductInventoryService {
         center.setId(addNewProductInventoryRequestData.getCenterId());
         newProductInventory.setCenter(center);
 
-        UserTable user = new UserTable();
-        user.setId(userId);
-        newProductInventory.setUser(user);
-
         productInventoryRepository.save(newProductInventory);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> editProductInventory(String jwtToken, EditProductInventoryRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        ProductInventoryTable productInventory = productInventoryRepository.getReferenceById(requestData.getId());
+        productInventory.setQuantity(requestData.getQuantity());
+        productInventoryRepository.save(productInventory);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> deleteProductInventory(String jwtToken, DeleteProductInventoryRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        ProductInventoryTable productInventory = productInventoryRepository.getReferenceById(requestData.getId());
+        productInventory.setStatus(ProductInventoryStatus.DISCONTINUED.getValue());
+        productInventoryRepository.save(productInventory);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -75,7 +105,7 @@ public class ProductInventoryService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CenterOwnerProductInventoryListProjection> productInventoryList = productInventoryRepository.findByUserId(userId);
+        List<CenterOwnerProductInventoryListProjection> productInventoryList = productInventoryRepository.findByCenterUserId(userId);
         return new ResponseEntity<>(productInventoryList, HttpStatus.OK);
     }
 
@@ -103,6 +133,7 @@ public class ProductInventoryService {
         filterCriteria.setUserId(userId);
         filterCriteria.setCenterId(requestData.getCenterIdFilter() != null ? Long.parseLong(requestData.getCenterIdFilter()) : null);
         filterCriteria.setProductId(requestData.getProductIdFilter() != null ? Long.parseLong(requestData.getProductIdFilter()) : null);
+        filterCriteria.setStatus(ProductInventoryStatus.ACTIVE.getValue());
 
         List<Sort.Order> sortOrders = new ArrayList<>();
         if (requestData.getIdSortOrder() != null) {
@@ -137,7 +168,7 @@ public class ProductInventoryService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CenterOwnerProductInventoryCenterFilterListProjection> centerList = productInventoryRepository.findCenterOwnerProductInventoryCenterFilterListDistinctCenterIdByUserIdAndCenterNameContaining(userId, requestData.getQuery());
+        List<CenterOwnerProductInventoryCenterFilterListProjection> centerList = productInventoryRepository.findCenterOwnerProductInventoryCenterFilterListDistinctCenterIdByCenterUserIdAndCenterNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<Object>(centerList, HttpStatus.OK);
     }
 
@@ -149,7 +180,7 @@ public class ProductInventoryService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CenterOwnerProductInventoryProductFilterListInterface> productList = productInventoryRepository.findCenterOwnerProductInventoryProductFilterListDistinctProductIdByUserIdAndProductNameContaining(userId, requestData.getQuery());
+        List<CenterOwnerProductInventoryProductFilterListInterface> productList = productInventoryRepository.findCenterOwnerProductInventoryProductFilterListDistinctProductIdByCenterUserIdAndProductNameContaining(userId, requestData.getQuery());
         return new ResponseEntity<Object>(productList, HttpStatus.OK);
     }
 }

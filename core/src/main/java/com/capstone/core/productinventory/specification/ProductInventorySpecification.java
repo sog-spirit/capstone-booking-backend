@@ -21,6 +21,7 @@ public class ProductInventorySpecification implements Specification<ProductInven
         return hasUserId(productInventoryFilterCriteria.getUserId())
                 .and(hasCenterId(productInventoryFilterCriteria.getCenterId()))
                 .and(hasProductId(productInventoryFilterCriteria.getProductId()))
+                .and(hasStatus(productInventoryFilterCriteria.getStatus()))
                 .toPredicate(root, query, criteriaBuilder);
     }
 
@@ -48,7 +49,17 @@ public class ProductInventorySpecification implements Specification<ProductInven
         return (root, query, builder) -> {
             Predicate predicate = null;
             if (userId != null) {
-                predicate = builder.equal(root.get("user").get("id"), userId);
+                predicate = builder.equal(root.get("product").get("user").get("id"), userId);
+            }
+            return predicate;
+        };
+    }
+
+    static Specification<ProductInventoryTable> hasStatus(Long status) {
+        return (root, query, builder) -> {
+            Predicate predicate = null;
+            if (status != null) {
+                predicate = builder.equal(root.get("status"), status);
             }
             return predicate;
         };

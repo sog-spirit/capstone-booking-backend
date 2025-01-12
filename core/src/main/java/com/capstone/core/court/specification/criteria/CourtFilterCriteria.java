@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourtFilterCriteria {
-    private Long centerOwnerId;
     private Long centerId;
+    private Long status;
 }

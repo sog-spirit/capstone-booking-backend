@@ -26,4 +26,5 @@ public class ProductImageTable {
     @Column(name = "\"type\"")
     private Long type;
     private Long displayOrder;
+    private Long status;
 }
