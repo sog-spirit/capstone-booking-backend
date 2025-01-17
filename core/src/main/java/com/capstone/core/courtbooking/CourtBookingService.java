@@ -23,6 +23,7 @@ import com.capstone.core.center.CenterRepository;
 import com.capstone.core.court.CourtRepository;
 import com.capstone.core.court.projection.CourtCenterWorkingTimeProjection;
 import com.capstone.core.courtbooking.data.request.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.AdminStatisticsCenterRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCancelCourtBookingRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCheckoutCourtBookingRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingCenterListRequestData;
@@ -47,6 +48,8 @@ import com.capstone.core.courtbooking.data.response.CenterOwnerCourtCourtBooking
 import com.capstone.core.courtbooking.data.response.UserCourtBookingListResponseData;
 import com.capstone.core.courtbooking.data.response.UserCourtCourtBookingListResponseData;
 import com.capstone.core.courtbooking.data.response.UserCourtDateCourtBookingListResponseData;
+import com.capstone.core.courtbooking.projection.AdminStatisticsCenterProjection;
+import com.capstone.core.courtbooking.projection.AdminStatisticsTodayProjection;
 import com.capstone.core.courtbooking.projection.CenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingCenterListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingCourtListProjection;
@@ -55,6 +58,7 @@ import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingListProj
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtBookingUserListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerCourtCourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.CenterOwnerStatisticsCenterProjection;
+import com.capstone.core.courtbooking.projection.CenterOwnerStatisticsTodayProjection;
 import com.capstone.core.courtbooking.projection.CourtBookingListProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingCenterIdProjection;
 import com.capstone.core.courtbooking.projection.UserCourtBookingCenterListProjection;
@@ -348,7 +352,7 @@ public class CourtBookingService {
         List<Object> timeMarks = new ArrayList<>();
         Map<String, Object> timeMarksItem;
         LocalTime currentTime = workingTime.getCenter().getOpeningTime();
-        int intervalMinutes = 15;
+        int intervalMinutes = 60;
 
         if (courtBookingList.isEmpty()) {
             do {
@@ -405,12 +409,12 @@ public class CourtBookingService {
         }
 
         CourtCenterWorkingTimeProjection workingTime = courtRepository.findWorkingTimeByIdAndStatus(requestData.getCourtId(), CourtStatus.ACTIVE.getValue());
-        List<UserCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findUserCourtCourtBookingListByUserIdAndCourtIdAndUsageDateAndStatusNotOrderByUsageTimeStartAscUsageTimeEndAsc(userId, requestData.getCourtId(), requestData.getDate(), CourtBookingStatus.CANCELLED.getValue());
+        List<UserCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findUserCourtCourtBookingListByCourtIdAndUsageDateAndStatusNotOrderByUsageTimeStartAscUsageTimeEndAsc(requestData.getCourtId(), requestData.getDate(), CourtBookingStatus.CANCELLED.getValue());
 
         List<Object> timeMarks = new ArrayList<>();
         Map<String, Object> timeMarksItem;
         LocalTime currentTime = workingTime.getCenter().getOpeningTime();
-        int intervalMinutes = 15;
+        int intervalMinutes = 60;
 
         if (courtBookingList.isEmpty()) {
             do {
@@ -442,6 +446,7 @@ public class CourtBookingService {
                     courtBookingListIndex++;
                     if (courtBookingListIndex < courtBookingList.size()) {
                         courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
+                        courtBookingUserId = courtBookingList.get(courtBookingListIndex).getUserId();
                         bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
                         bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
                         status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
@@ -470,12 +475,12 @@ public class CourtBookingService {
         }
 
         CourtCenterWorkingTimeProjection workingTime = courtRepository.findWorkingTimeByIdAndStatus(requestData.getCourtId(), CourtStatus.ACTIVE.getValue());
-        List<UserCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findUserCourtCourtBookingListByUserIdAndCourtIdAndUsageDateAndStatusNotOrderByUsageTimeStartAscUsageTimeEndAsc(userId, requestData.getCourtId(), requestData.getUsageDate(), CourtBookingStatus.CANCELLED.getValue());
+        List<UserCourtCourtBookingListProjection> courtBookingList = courtBookingRepository.findUserCourtCourtBookingListByCourtIdAndUsageDateAndStatusNotOrderByUsageTimeStartAscUsageTimeEndAsc(requestData.getCourtId(), requestData.getUsageDate(), CourtBookingStatus.CANCELLED.getValue());
 
         List<Object> timeMarks = new ArrayList<>();
         Map<String, Object> timeMarksItem;
         LocalTime currentTime = workingTime.getCenter().getOpeningTime();
-        int intervalMinutes = 15;
+        int intervalMinutes = 60;
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
         if (courtBookingList.isEmpty()) {
@@ -488,7 +493,6 @@ public class CourtBookingService {
             } while (!currentTime.isAfter(workingTime.getCenter().getClosingTime()));
         } else {
             int courtBookingListIndex = 0;
-            Long courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
             LocalTime bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
             LocalTime bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
             String status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
@@ -507,7 +511,6 @@ public class CourtBookingService {
                     
                     courtBookingListIndex++;
                     if (courtBookingListIndex < courtBookingList.size()) {
-                        courtBookingId = courtBookingList.get(courtBookingListIndex).getId();
                         bookedStart = courtBookingList.get(courtBookingListIndex).getUsageTimeStart();
                         bookedEnd = courtBookingList.get(courtBookingListIndex).getUsageTimeEnd();
                         status = CourtBookingStatus.getName(courtBookingList.get(courtBookingListIndex).getStatus());
@@ -625,72 +628,183 @@ public class CourtBookingService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (requestData.getFrequency().equals("Daily")) {
+        if (requestData.getDateFrom() != null && requestData.getDateTo() != null) {
             List<Map<String, Object>> result = new ArrayList<>();
             Map<String, Object> resultItem;
 
-            LocalDate date = LocalDate.now().minusDays(requestData.getRange() - 1);
+            LocalDate dateFrom = requestData.getDateFrom();
+            LocalDate dateTo = requestData.getDateTo();
 
-            for (long i = 1; i <= requestData.getRange(); i++) {
-                CenterOwnerStatisticsCenterProjection queryData = courtBookingRepository.findCenterOwnerStatisticsCenterDaily(userId, requestData.getCenterId(), date);
+            while (dateFrom.isBefore(dateTo) || dateFrom.isEqual(dateTo)) {
+                CenterOwnerStatisticsCenterProjection queryData = courtBookingRepository.findCenterOwnerStatisticsCenterDaily(userId, requestData.getCenterId(), dateFrom);
 
                 resultItem = new HashMap<>();
-                resultItem.put("label", date);
+                resultItem.put("label", dateFrom);
                 resultItem.put("courtFee", queryData.getCourtFee());
                 resultItem.put("centerFee", queryData.getProductFee());
 
                 result.add(resultItem);
 
-                date = date.plusDays(1);
+                dateFrom = dateFrom.plusDays(1);
             }
 
             return new ResponseEntity<>(result, HttpStatus.OK);
-        } else if (requestData.getFrequency().equals("Monthly")) {
+        } else if (requestData.getMonthFrom() != null && requestData.getMonthTo() != null) {
+            DateTimeFormatter yearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+            YearMonth yearMonthFrom = YearMonth.parse(requestData.getMonthFrom(), yearMonthFormatter);
+            YearMonth yearMonthTo = YearMonth.parse(requestData.getMonthTo(), yearMonthFormatter);
             List<Map<String, Object>> result = new ArrayList<>();
             Map<String, Object> resultItem;
 
-            YearMonth yearMonth = YearMonth.now().minusMonths(requestData.getRange() - 1);
-
-            for (long i = 1; i <= requestData.getRange(); i++) {
-                LocalDate firstDayOfMonth = yearMonth.atDay(1);
-                LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+            while (yearMonthFrom.isBefore(yearMonthTo) || yearMonthFrom.equals(yearMonthTo)) {
+                LocalDate firstDayOfMonth = yearMonthFrom.atDay(1);
+                LocalDate lastDayOfMonth = yearMonthFrom.atEndOfMonth();
                 CenterOwnerStatisticsCenterProjection queryData = courtBookingRepository.findCenterOwnerStatisticsCenterMonthly(userId, requestData.getCenterId(), firstDayOfMonth, lastDayOfMonth);
 
                 resultItem = new HashMap<>();
-                resultItem.put("label", yearMonth);
+                resultItem.put("label", yearMonthFrom);
                 resultItem.put("courtFee", queryData.getCourtFee());
                 resultItem.put("centerFee", queryData.getProductFee());
 
                 result.add(resultItem);
 
-                yearMonth = yearMonth.plusMonths(1);
+                yearMonthFrom = yearMonthFrom.plusMonths(1);
             }
 
             return new ResponseEntity<>(result, HttpStatus.OK);
-        } else if (requestData.getFrequency().equals("Yearly")) {
+        } else if (requestData.getYearFrom() != null && requestData.getYearTo() != null) {
+            YearMonth yearMonthFrom = YearMonth.of(Integer.parseInt(requestData.getYearFrom()), 1);
+            YearMonth yearMonthTo = YearMonth.of(Integer.parseInt(requestData.getYearTo()), 1);
             List<Map<String, Object>> result = new ArrayList<>();
             Map<String, Object> resultItem;
 
-            YearMonth yearMonth = YearMonth.now().minusYears(requestData.getRange() - 1);
-
-            for (long i = 1; i <= requestData.getRange(); i++) {
-                LocalDate firstDayOfYear = LocalDate.of(yearMonth.getYear(), 1, 1);
-                LocalDate lastDayOfYear = LocalDate.of(yearMonth.getYear(), 12, 31);
+            while (yearMonthFrom.isBefore(yearMonthTo) || yearMonthFrom.equals(yearMonthTo)) {
+                LocalDate firstDayOfYear = LocalDate.of(yearMonthFrom.getYear(), 1, 1);
+                LocalDate lastDayOfYear = LocalDate.of(yearMonthFrom.getYear(), 12, 31);
                 CenterOwnerStatisticsCenterProjection queryData = courtBookingRepository.findCenterOwnerStatisticsCenterMonthly(userId, requestData.getCenterId(), firstDayOfYear, lastDayOfYear);
 
                 resultItem = new HashMap<>();
-                resultItem.put("label", yearMonth.getYear());
+                resultItem.put("label", yearMonthFrom.getYear());
                 resultItem.put("courtFee", queryData.getCourtFee());
                 resultItem.put("centerFee", queryData.getProductFee());
 
                 result.add(resultItem);
 
-                yearMonth = yearMonth.plusYears(1);
+                yearMonthFrom = yearMonthFrom.plusYears(1);
             }
 
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerStatisticsToday(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDate dateNow = LocalDate.now();
+        LocalDateTime localDateTimeFrom = dateNow.atStartOfDay();
+        LocalDateTime localDateTimeTo = dateNow.plusDays(1).atStartOfDay();
+        CenterOwnerStatisticsTodayProjection todayStatistics = courtBookingRepository.findCenterOwnerStatisticsToday(userId, localDateTimeFrom, localDateTimeTo);
+        return new ResponseEntity<Object>(todayStatistics, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getAdminStatisticsCenter(String jwtToken, AdminStatisticsCenterRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (requestData.getDateFrom() != null && requestData.getDateTo() != null) {
+            List<Map<String, Object>> result = new ArrayList<>();
+            Map<String, Object> resultItem;
+
+            LocalDate dateFrom = requestData.getDateFrom();
+            LocalDate dateTo = requestData.getDateTo();
+
+            while (dateFrom.isBefore(dateTo) || dateFrom.isEqual(dateTo)) {
+                AdminStatisticsCenterProjection queryData = courtBookingRepository.findAdminStatisticsCenterDaily(requestData.getCenterId(), dateFrom);
+
+                resultItem = new HashMap<>();
+                resultItem.put("label", dateFrom);
+                resultItem.put("courtFee", queryData.getCourtFee());
+                resultItem.put("centerFee", queryData.getProductFee());
+
+                result.add(resultItem);
+
+                dateFrom = dateFrom.plusDays(1);
+            }
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else if (requestData.getMonthFrom() != null && requestData.getMonthTo() != null) {
+            DateTimeFormatter yearMonthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+            YearMonth yearMonthFrom = YearMonth.parse(requestData.getMonthFrom(), yearMonthFormatter);
+            YearMonth yearMonthTo = YearMonth.parse(requestData.getMonthTo(), yearMonthFormatter);
+            List<Map<String, Object>> result = new ArrayList<>();
+            Map<String, Object> resultItem;
+
+            while (yearMonthFrom.isBefore(yearMonthTo) || yearMonthFrom.equals(yearMonthTo)) {
+                LocalDate firstDayOfMonth = yearMonthFrom.atDay(1);
+                LocalDate lastDayOfMonth = yearMonthFrom.atEndOfMonth();
+                AdminStatisticsCenterProjection queryData = courtBookingRepository.findAdminStatisticsCenterMonthly(requestData.getCenterId(), firstDayOfMonth, lastDayOfMonth);
+
+                resultItem = new HashMap<>();
+                resultItem.put("label", yearMonthFrom);
+                resultItem.put("courtFee", queryData.getCourtFee());
+                resultItem.put("centerFee", queryData.getProductFee());
+
+                result.add(resultItem);
+
+                yearMonthFrom = yearMonthFrom.plusMonths(1);
+            }
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else if (requestData.getYearFrom() != null && requestData.getYearTo() != null) {
+            YearMonth yearMonthFrom = YearMonth.of(Integer.parseInt(requestData.getYearFrom()), 1);
+            YearMonth yearMonthTo = YearMonth.of(Integer.parseInt(requestData.getYearTo()), 1);
+            List<Map<String, Object>> result = new ArrayList<>();
+            Map<String, Object> resultItem;
+
+            while (yearMonthFrom.isBefore(yearMonthTo) || yearMonthFrom.equals(yearMonthTo)) {
+                LocalDate firstDayOfYear = LocalDate.of(yearMonthFrom.getYear(), 1, 1);
+                LocalDate lastDayOfYear = LocalDate.of(yearMonthFrom.getYear(), 12, 31);
+                AdminStatisticsCenterProjection queryData = courtBookingRepository.findAdminStatisticsCenterMonthly(requestData.getCenterId(), firstDayOfYear, lastDayOfYear);
+
+                resultItem = new HashMap<>();
+                resultItem.put("label", yearMonthFrom.getYear());
+                resultItem.put("courtFee", queryData.getCourtFee());
+                resultItem.put("centerFee", queryData.getProductFee());
+
+                result.add(resultItem);
+
+                yearMonthFrom = yearMonthFrom.plusYears(1);
+            }
+
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getAdminStatisticsToday(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDate dateNow = LocalDate.now();
+        LocalDateTime localDateTimeFrom = dateNow.atStartOfDay();
+        LocalDateTime localDateTimeTo = dateNow.plusDays(1).atStartOfDay();
+        AdminStatisticsTodayProjection todayStatistics = courtBookingRepository.findAdminStatisticsToday(localDateTimeFrom, localDateTimeTo);
+        return new ResponseEntity<Object>(todayStatistics, HttpStatus.OK);
     }
 }

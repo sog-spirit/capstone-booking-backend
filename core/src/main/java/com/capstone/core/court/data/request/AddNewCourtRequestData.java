@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 public class AddNewCourtRequestData {
     @NotEmpty(message = "{error.name.required}")
     private String name;
-    @Digits(integer = 1, fraction = 0, message = "{error.centerId.required}")
     private Long centerId;
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.capstone.core.center.projection.CenterOwnerCenterListDropdownProjection;
 import com.capstone.core.center.projection.CenterOwnerStatisticsCenterListProjection;
 import com.capstone.core.center.projection.CenterOwnerCenterInfoProjection;
+import com.capstone.core.center.projection.AdminStatisticsCenterListProjection;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.center.projection.UserCenterListProjection;
 import com.capstone.core.center.projection.UserCenterInfoProjection;
@@ -38,4 +39,5 @@ public interface CenterRepository extends JpaRepository<CenterTable, Long>, JpaS
     CenterOwnerCenterInfoProjection findCenterOwnerCenterInfoById(Long centerId);
     UserCenterInfoProjection findUserCenterInfoById(Long centerId);
     List<CenterOwnerStatisticsCenterListProjection> findCenterOwnerStatisticsCenterListByUserIdAndNameContaining(Long userId, String name);
+    List<AdminStatisticsCenterListProjection> findAdminStatisticsCenterListByNameContaining(String name);
 }

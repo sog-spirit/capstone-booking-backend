@@ -23,8 +23,8 @@ public class CorsFilterConfig implements Filter {
         httpServletResponse.setHeader("Access-Control-Allow-Origin", URLConsts.WEB_CLIENT_URL);
         httpServletResponse.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE, PATCH");
         httpServletResponse.setHeader("Access-Control-Max-Age", "3600");
-        httpServletResponse.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-        httpServletResponse.setHeader("Access-Control-Expose-Headers", "Location");
+        httpServletResponse.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, X-Auth-Token, Content-Type, Accept, Authorization");
+        httpServletResponse.setHeader("Access-Control-Expose-Headers", "Location, Authorization, X-Auth-Token");
         filterChain.doFilter(request, response);
     }
 

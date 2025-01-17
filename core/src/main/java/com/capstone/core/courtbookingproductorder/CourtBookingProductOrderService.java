@@ -1,5 +1,6 @@
 package com.capstone.core.courtbookingproductorder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,22 +19,35 @@ import com.capstone.core.courtbookingproductorder.data.request.AddCourtBookingPr
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCancelCourtBookingProductOrderRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCheckoutCourtBookingProductOrderRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCourtBookingProductOrderListRequestData;
+import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCourtBookingStatisticsRequestData;
+import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerProductOrderStatisticsRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.UserCancelCourtBookingProductOrderRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.UserCourtBookingProductOrderDetailListRequestData;
 import com.capstone.core.courtbookingproductorder.data.response.CenterOwnerCourtBookingProductOrderListResponseData;
 import com.capstone.core.courtbookingproductorder.data.request.AddCourtBookingProductOrderRequestData.CartItem;
+import com.capstone.core.courtbookingproductorder.data.request.AdminCourtBookingStatisticsRequestData;
+import com.capstone.core.courtbookingproductorder.data.request.AdminProductOrderStatisticsRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCourtBookingProductOrderDetailListRequestData;
+import com.capstone.core.courtbookingproductorder.projection.AdminCourtBookingStatisticsProjection;
+import com.capstone.core.courtbookingproductorder.projection.AdminProductOrderStatisticsProjection;
+import com.capstone.core.courtbookingproductorder.projection.AdminProductOrderStatisticsTodayProjection;
 import com.capstone.core.courtbookingproductorder.projection.CenterOwnerCourtBookingProductOrderDetailListProjection;
 import com.capstone.core.courtbookingproductorder.projection.CenterOwnerCourtBookingProductOrderListProjection;
+import com.capstone.core.courtbookingproductorder.projection.CenterOwnerCourtBookingStatisticsProjection;
+import com.capstone.core.courtbookingproductorder.projection.CenterOwnerProductOrderStatisticsProjection;
+import com.capstone.core.courtbookingproductorder.projection.CenterOwnerProductOrderStatisticsTodayProjection;
 import com.capstone.core.courtbookingproductorder.projection.UserCourtBookingProductOrderDetailListProjection;
 import com.capstone.core.courtbookingproductorder.specification.CourtBookingProductOrderSpecification;
 import com.capstone.core.courtbookingproductorder.specification.criteria.CourtBookingProductOrderCriteria;
+import com.capstone.core.courtbookingproductorderdetail.CourtBookingProductOrderDetailRepository;
 import com.capstone.core.productinventory.ProductInventoryRepository;
+import com.capstone.core.table.CourtBookingProductOrderDetailTable;
 import com.capstone.core.table.CourtBookingProductOrderTable;
 import com.capstone.core.table.CourtBookingTable;
 import com.capstone.core.table.ProductInventoryTable;
 import com.capstone.core.table.UserTable;
 import com.capstone.core.util.consts.CourtBookingProductOrderStatus;
+import com.capstone.core.util.consts.CourtBookingStatus;
 import com.capstone.core.util.security.jwt.JwtUtil;
 
 import lombok.AllArgsConstructor;
@@ -42,6 +56,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CourtBookingProductOrderService {
     private CourtBookingProductOrderRepository courtBookingProductOrderRepository;
+    private CourtBookingProductOrderDetailRepository courtBookingProductOrderDetailRepository;
     private ProductInventoryRepository productInventoryRepository;
     private CourtBookingRepository courtBookingRepository;
 
@@ -53,8 +68,10 @@ public class CourtBookingProductOrderService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<CourtBookingProductOrderTable> courtBookingProductOrderItems = new ArrayList<>();
-        CourtBookingProductOrderTable courtBookingProductOrderItem;
+        LocalDateTime localDateTimeNow = LocalDateTime.now();
+
+        List<CourtBookingProductOrderDetailTable> courtBookingProductOrderDetailItems = new ArrayList<>();
+        CourtBookingProductOrderDetailTable courtBookingProductOrderDetailItem;
 
         List<ProductInventoryTable> productInventoryItems = new ArrayList<>();
         ProductInventoryTable productInventoryItem;
@@ -65,26 +82,32 @@ public class CourtBookingProductOrderService {
         CourtBookingTable courtBooking = courtBookingRepository.getReferenceById(requestData.getCourtBookingId());
         courtBooking.setProductFee(courtBooking.getProductFee() + requestData.getTotal());
 
-        LocalDateTime localDateTimeNow = LocalDateTime.now();
+        CourtBookingProductOrderTable courtBookingProductOrder = new CourtBookingProductOrderTable();
+        courtBookingProductOrder.setCourtBooking(courtBooking);
+        courtBookingProductOrder.setCreateTimestamp(localDateTimeNow);
+        courtBookingProductOrder.setUpdateTimestamp(localDateTimeNow);
+        courtBookingProductOrder.setFee(Long.parseLong("0"));
+        courtBookingProductOrder.setStatus(CourtBookingStatus.PENDING.getValue());
+        courtBookingProductOrder = courtBookingProductOrderRepository.save(courtBookingProductOrder);
 
         for (CartItem cartItem : requestData.getCart()) {
             productInventoryItem = productInventoryRepository.getReferenceById(cartItem.getProductInventoryId());
             productInventoryItem.setQuantity(productInventoryItem.getQuantity() - cartItem.getQuantity());
             productInventoryItems.add(productInventoryItem);
 
-            courtBookingProductOrderItem = new CourtBookingProductOrderTable();
-            courtBookingProductOrderItem.setUser(user);
-            courtBookingProductOrderItem.setProductInventory(productInventoryItem);
-            courtBookingProductOrderItem.setCourtBooking(courtBooking);
-            courtBookingProductOrderItem.setQuantity(cartItem.getQuantity());
-            courtBookingProductOrderItem.setCreateTimestamp(localDateTimeNow);
-            courtBookingProductOrderItem.setFee(productInventoryItem.getProduct().getPrice() * cartItem.getQuantity());
-            courtBookingProductOrderItem.setStatus(CourtBookingProductOrderStatus.PENDING.getValue());
-            courtBookingProductOrderItems.add(courtBookingProductOrderItem);
+            courtBookingProductOrderDetailItem = new CourtBookingProductOrderDetailTable();
+            courtBookingProductOrderDetailItem.setCourtBookingProductOrder(courtBookingProductOrder);
+            courtBookingProductOrderDetailItem.setProductInventory(productInventoryItem);
+            courtBookingProductOrderDetailItem.setQuantity(cartItem.getQuantity());
+            courtBookingProductOrderDetailItem.setFee(productInventoryItem.getProduct().getPrice() * cartItem.getQuantity());
+            courtBookingProductOrderDetailItems.add(courtBookingProductOrderDetailItem);
+
+            courtBookingProductOrder.setFee(courtBookingProductOrder.getFee() + productInventoryItem.getProduct().getPrice() * cartItem.getQuantity());
         }
 
+        courtBookingProductOrderRepository.save(courtBookingProductOrder);
         productInventoryRepository.saveAll(productInventoryItems);
-        courtBookingProductOrderRepository.saveAll(courtBookingProductOrderItems);
+        courtBookingProductOrderDetailRepository.saveAll(courtBookingProductOrderDetailItems);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -100,7 +123,7 @@ public class CourtBookingProductOrderService {
         CourtBookingProductOrderTable productOrder = courtBookingProductOrderRepository.getReferenceById(requestData.getId());
         productOrder.setStatus(CourtBookingProductOrderStatus.CANCELED.getValue());
         Long courtBookingProductFee = productOrder.getCourtBooking().getProductFee();
-        Long productFee = productOrder.getFee() * productOrder.getQuantity();
+        Long productFee = productOrder.getFee();
         productOrder.getCourtBooking().setProductFee(courtBookingProductFee - productFee);
         courtBookingProductOrderRepository.save(productOrder);
 
@@ -118,7 +141,7 @@ public class CourtBookingProductOrderService {
         CourtBookingProductOrderTable productOrder = courtBookingProductOrderRepository.getReferenceById(requestData.getId());
         productOrder.setStatus(CourtBookingProductOrderStatus.CANCELED.getValue());
         Long courtBookingProductFee = productOrder.getCourtBooking().getProductFee();
-        Long productFee = productOrder.getFee() * productOrder.getQuantity();
+        Long productFee = productOrder.getFee();
         productOrder.getCourtBooking().setProductFee(courtBookingProductFee - productFee);
         courtBookingProductOrderRepository.save(productOrder);
 
@@ -148,7 +171,7 @@ public class CourtBookingProductOrderService {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        List<UserCourtBookingProductOrderDetailListProjection> productOrderList = courtBookingProductOrderRepository.findUserCourtBookingProductOrderDetailListByCourtBookingIdAndUserIdAndStatusNot(requestData.getCourtBookingId(), userId, CourtBookingProductOrderStatus.CANCELED.getValue());
+        List<UserCourtBookingProductOrderDetailListProjection> productOrderList = courtBookingProductOrderRepository.findUserCourtBookingProductOrderDetailListByCourtBookingIdAndCourtBookingUserIdAndStatusNot(requestData.getCourtBookingId(), userId, CourtBookingProductOrderStatus.CANCELED.getValue());
         return new ResponseEntity<>(productOrderList, HttpStatus.OK);
     }
 
@@ -175,16 +198,11 @@ public class CourtBookingProductOrderService {
         CourtBookingProductOrderCriteria filterCriteria = new CourtBookingProductOrderCriteria();
         filterCriteria.setId(requestData.getId());
         filterCriteria.setCourtBookingId(requestData.getCourtBookingId());
-        filterCriteria.setProductInventoryId(requestData.getProductInventoryId());
-        filterCriteria.setUserId(requestData.getUserId());
         filterCriteria.setCreateTimestampFrom(requestData.getCreateTimestampFrom());
         filterCriteria.setCreateTimestampTo(requestData.getCreateTimestampTo());
-        filterCriteria.setQuantityFrom(requestData.getQuantityFrom());
-        filterCriteria.setQuantityTo(requestData.getQuantityTo());
         filterCriteria.setFeeFrom(requestData.getFeeFrom());
         filterCriteria.setFeeTo(requestData.getFeeTo());
         filterCriteria.setStatusId(requestData.getStatusId());
-        filterCriteria.setCenterOwnerId(userId);
 
         List<Sort.Order> sortOrders = new ArrayList<>();
         if (requestData.getIdSortOrder() != null) {
@@ -222,5 +240,91 @@ public class CourtBookingProductOrderService {
         responseData.setTotalPage(productOrderList.getTotalPages());
 
         return new ResponseEntity<>(responseData, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductOrderStatistics(String jwtToken, CenterOwnerProductOrderStatisticsRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDateTime localDateTimeFrom = requestData.getDateFrom().atStartOfDay();
+        LocalDateTime localDateTimeTo = requestData.getDateTo().plusDays(1).atStartOfDay();
+        List<CenterOwnerProductOrderStatisticsProjection> productOrderStatistics = courtBookingProductOrderRepository.findCenterOwnerProductOrderStatistics(userId, localDateTimeFrom, localDateTimeTo, requestData.getCenterId());
+        return new ResponseEntity<>(productOrderStatistics, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerCourtBookingStatistics(String jwtToken, CenterOwnerCourtBookingStatisticsRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDateTime localDateTimeFrom = requestData.getDateFrom().atStartOfDay();
+        LocalDateTime localDateTimeTo = requestData.getDateTo().plusDays(1).atStartOfDay();
+        List<CenterOwnerCourtBookingStatisticsProjection> courtBookingStatistics = courtBookingProductOrderRepository.findCenterOwnerCourtBookingStatistics(userId, localDateTimeFrom, localDateTimeTo, requestData.getCenterId());
+        return new ResponseEntity<>(courtBookingStatistics, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getCenterOwnerProductOrderStatisticsToday(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDate dateNow = LocalDate.now();
+        LocalDateTime localDateTimeFrom = dateNow.atStartOfDay();
+        LocalDateTime localDateTimeTo = dateNow.plusDays(1).atStartOfDay();
+        CenterOwnerProductOrderStatisticsTodayProjection productOrderTodayStatistics = courtBookingProductOrderRepository.findCenterOwnerProductOrderStatisticsToday(userId, localDateTimeFrom, localDateTimeTo);
+        return new ResponseEntity<>(productOrderTodayStatistics, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getAdminProductOrderStatistics(String jwtToken, AdminProductOrderStatisticsRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDateTime localDateTimeFrom = requestData.getDateFrom().atStartOfDay();
+        LocalDateTime localDateTimeTo = requestData.getDateTo().plusDays(1).atStartOfDay();
+        List<AdminProductOrderStatisticsProjection> productOrderStatistics = courtBookingProductOrderRepository.findAdminProductOrderStatistics(localDateTimeFrom, localDateTimeTo, requestData.getCenterId());
+        return new ResponseEntity<>(productOrderStatistics, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getAdminCourtBookingStatistics(String jwtToken, AdminCourtBookingStatisticsRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDateTime localDateTimeFrom = requestData.getDateFrom().atStartOfDay();
+        LocalDateTime localDateTimeTo = requestData.getDateTo().plusDays(1).atStartOfDay();
+        List<AdminCourtBookingStatisticsProjection> courtBookingStatistics = courtBookingProductOrderRepository.findAdminCourtBookingStatistics(localDateTimeFrom, localDateTimeTo, requestData.getCenterId());
+        return new ResponseEntity<>(courtBookingStatistics, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getAdminProductOrderStatisticsToday(String jwtToken) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        LocalDate dateNow = LocalDate.now();
+        LocalDateTime localDateTimeFrom = dateNow.atStartOfDay();
+        LocalDateTime localDateTimeTo = dateNow.plusDays(1).atStartOfDay();
+        AdminProductOrderStatisticsTodayProjection productOrderTodayStatistics = courtBookingProductOrderRepository.findAdminProductOrderStatisticsToday(localDateTimeFrom, localDateTimeTo);
+        return new ResponseEntity<>(productOrderTodayStatistics, HttpStatus.OK);
     }
 }

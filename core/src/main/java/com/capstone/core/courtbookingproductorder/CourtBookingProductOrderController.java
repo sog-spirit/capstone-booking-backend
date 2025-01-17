@@ -11,10 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.courtbookingproductorder.data.request.AddCourtBookingProductOrderRequestData;
+import com.capstone.core.courtbookingproductorder.data.request.AdminCourtBookingStatisticsRequestData;
+import com.capstone.core.courtbookingproductorder.data.request.AdminProductOrderStatisticsRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCancelCourtBookingProductOrderRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCheckoutCourtBookingProductOrderRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCourtBookingProductOrderDetailListRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCourtBookingProductOrderListRequestData;
+import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerCourtBookingStatisticsRequestData;
+import com.capstone.core.courtbookingproductorder.data.request.CenterOwnerProductOrderStatisticsRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.UserCancelCourtBookingProductOrderRequestData;
 import com.capstone.core.courtbookingproductorder.data.request.UserCourtBookingProductOrderDetailListRequestData;
 
@@ -72,5 +76,39 @@ public class CourtBookingProductOrderController {
     ResponseEntity<Object> getCenterOwnerCourtBookingProductOrderList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             CenterOwnerCourtBookingProductOrderListRequestData requestData) {
         return courtBookingProductOrderService.getCenterOwnerCourtBookingProductOrderList(jwtToken, requestData);
+    }
+
+    @GetMapping("/center-owner/product-order/statistics")
+    ResponseEntity<Object> getCenterOwnerProductOrderStatistics(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerProductOrderStatisticsRequestData requestData) {
+        return courtBookingProductOrderService.getCenterOwnerProductOrderStatistics(jwtToken, requestData);
+    }
+
+    @GetMapping("/center-owner/court-booking/statistics")
+    ResponseEntity<Object> getCenterOwnerCourtBookingStatistics(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            CenterOwnerCourtBookingStatisticsRequestData requestData) {
+        return courtBookingProductOrderService.getCenterOwnerCourtBookingStatistics(jwtToken, requestData);
+    }
+
+    @GetMapping("/center-owner/statistics/today")
+    ResponseEntity<Object> getCenterOwnerProductOrderStatisticsToday(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
+        return courtBookingProductOrderService.getCenterOwnerProductOrderStatisticsToday(jwtToken);
+    }
+
+    @GetMapping("/admin/product-order/statistics")
+    ResponseEntity<Object> getAdminProductOrderStatistics(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            AdminProductOrderStatisticsRequestData requestData) {
+        return courtBookingProductOrderService.getAdminProductOrderStatistics(jwtToken, requestData);
+    }
+
+    @GetMapping("/admin/court-booking/statistics")
+    ResponseEntity<Object> getAdminCourtBookingStatistics(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            AdminCourtBookingStatisticsRequestData requestData) {
+        return courtBookingProductOrderService.getAdminCourtBookingStatistics(jwtToken, requestData);
+    }
+
+    @GetMapping("/admin/statistics/today")
+    ResponseEntity<Object> getAdminProductOrderStatisticsToday(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
+        return courtBookingProductOrderService.getAdminProductOrderStatisticsToday(jwtToken);
     }
 }

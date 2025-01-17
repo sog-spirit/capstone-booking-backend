@@ -1,5 +1,7 @@
 package com.capstone.core.courtbooking.data.request;
 
+import java.time.LocalDate;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CenterOwnerStatisticsCenterRequestData {
     private Long centerId;
-    private String frequency;
-    private Long range;
+    private LocalDate dateFrom;
+    private LocalDate dateTo;
+    private String monthFrom;
+    private String monthTo;
+    private String yearFrom;
+    private String yearTo;
 }

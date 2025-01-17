@@ -22,16 +22,11 @@ public class CourtBookingProductOrderSpecification implements Specification<Cour
             CriteriaBuilder criteriaBuilder) {
         return hasId(courtBookingProductOrderCriteria.getId())
                 .and(hasCourtBookingId(courtBookingProductOrderCriteria.getCourtBookingId()))
-                .and(hasProductInventoryId(courtBookingProductOrderCriteria.getProductInventoryId()))
-                .and(hasUserId(courtBookingProductOrderCriteria.getUserId()))
                 .and(hasCreateTimestampFrom(courtBookingProductOrderCriteria.getCreateTimestampFrom()))
                 .and(hasCreateTimestampTo(courtBookingProductOrderCriteria.getCreateTimestampTo()))
-                .and(hasQuantityFrom(courtBookingProductOrderCriteria.getQuantityFrom()))
-                .and(hasQuantityTo(courtBookingProductOrderCriteria.getQuantityTo()))
                 .and(hasFeeFrom(courtBookingProductOrderCriteria.getFeeFrom()))
                 .and(hasFeeTo(courtBookingProductOrderCriteria.getFeeTo()))
                 .and(hasStatusId(courtBookingProductOrderCriteria.getStatusId()))
-                .and(hasCenterOwnerId(courtBookingProductOrderCriteria.getCenterOwnerId()))
                 .toPredicate(root, query, criteriaBuilder);
     }
 
@@ -55,26 +50,6 @@ public class CourtBookingProductOrderSpecification implements Specification<Cour
         };
     }
 
-    static Specification<CourtBookingProductOrderTable> hasProductInventoryId(Long productInventoryId) {
-        return (root, query, builder) -> {
-            Predicate predicate = null;
-            if (productInventoryId != null) {
-                predicate = builder.equal(root.get("productInventory").get("id"), productInventoryId);
-            }
-            return predicate;
-        };
-    }
-    
-    static Specification<CourtBookingProductOrderTable> hasUserId(Long userId) {
-        return (root, query, builder) -> {
-            Predicate predicate = null;
-            if (userId != null) {
-                predicate = builder.equal(root.get("user").get("id"), userId);
-            }
-            return predicate;
-        };
-    }
-    
     static Specification<CourtBookingProductOrderTable> hasCreateTimestampFrom(LocalDateTime createTimestampFrom) {
         return (root, query, builder) -> {
             Predicate predicate = null;
@@ -140,16 +115,6 @@ public class CourtBookingProductOrderSpecification implements Specification<Cour
             Predicate predicate = null;
             if (statusId != null) {
                 predicate = builder.equal(root.get("status").get("id"), statusId);
-            }
-            return predicate;
-        };
-    }
-
-    static Specification<CourtBookingProductOrderTable> hasCenterOwnerId(Long centerOwnerId) {
-        return (root, query, builder) -> {
-            Predicate predicate = null;
-            if (centerOwnerId != null) {
-                predicate = builder.equal(root.get("productInventory").get("center").get("user").get("id"), centerOwnerId);
             }
             return predicate;
         };

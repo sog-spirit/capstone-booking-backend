@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.capstone.core.center.data.request.AddNewCenterRequestData;
+import com.capstone.core.center.data.request.AdminStatisticsCenterListRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterDropdownRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterListRequestData;
 import com.capstone.core.center.data.request.CenterOwnerStatisticsCenterListRequestData;
@@ -31,6 +32,7 @@ import com.capstone.core.center.data.response.CenterOwnerCenterInfoResponseData;
 import com.capstone.core.center.data.response.UserCenterListResponseData;
 import com.capstone.core.center.data.response.UserCenterInfoResponseData;
 import com.capstone.core.center.projection.CenterOwnerCenterListDropdownProjection;
+import com.capstone.core.center.projection.AdminStatisticsCenterListProjection;
 import com.capstone.core.center.projection.CenterListProjection;
 import com.capstone.core.center.projection.CenterOwnerCenterListProjection;
 import com.capstone.core.center.projection.CenterOwnerStatisticsCenterListProjection;
@@ -229,12 +231,14 @@ public class CenterService {
             }
         }
 
-        for (OldPhotoItem oldPhoto : requestData.getOldPhotos()) {
-            if (oldPhoto.getDelete()) {
-                centerImage = centerImageRepository.getReferenceById(oldPhoto.getId());
-                FileUtils.deleteFile(centerImage.getImage().getFilePath());
-                centerImageRepository.delete(centerImage);
-                imageRepository.delete(centerImage.getImage());
+        if (requestData.getOldPhotos() != null) {
+            for (OldPhotoItem oldPhoto : requestData.getOldPhotos()) {
+                if (oldPhoto.getDelete()) {
+                    centerImage = centerImageRepository.getReferenceById(oldPhoto.getId());
+                    FileUtils.deleteFile(centerImage.getImage().getFilePath());
+                    centerImageRepository.delete(centerImage);
+                    imageRepository.delete(centerImage.getImage());
+                }
             }
         }
 
@@ -371,6 +375,19 @@ public class CenterService {
         }
 
         List<CenterOwnerStatisticsCenterListProjection> centerList = centerRepository.findCenterOwnerStatisticsCenterListByUserIdAndNameContaining(userId, requestData.getQuery());
+
+        return new ResponseEntity<>(centerList, HttpStatus.OK);
+    }
+
+    ResponseEntity<Object> getAdminStatisticsCenterList(String jwtToken, AdminStatisticsCenterListRequestData requestData) {
+        Long userId;
+        try {
+            userId = JwtUtil.getUserIdFromToken(jwtToken);
+        } catch (JWTVerificationException jwtVerificationException) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<AdminStatisticsCenterListProjection> centerList = centerRepository.findAdminStatisticsCenterListByNameContaining(requestData.getQuery());
 
         return new ResponseEntity<>(centerList, HttpStatus.OK);
     }

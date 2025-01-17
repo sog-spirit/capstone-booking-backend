@@ -19,16 +19,10 @@ public class CourtBookingProductOrderTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserTable user;
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "product_inventory_id", nullable = false)
-    private ProductInventoryTable productInventory;
-    @ManyToOne(optional = false)
     @JoinColumn(name = "court_booking_id", nullable = false)
     private CourtBookingTable courtBooking;
-    private Long quantity;
     private LocalDateTime createTimestamp;
+    private LocalDateTime updateTimestamp;
     private Long fee;
     private Long status;
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.courtbooking.data.request.AddNewCourtBookingRequestData;
+import com.capstone.core.courtbooking.data.request.AdminStatisticsCenterRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCancelCourtBookingRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCheckoutCourtBookingRequestData;
 import com.capstone.core.courtbooking.data.request.CenterOwnerCourtBookingCenterListRequestData;
@@ -170,5 +171,21 @@ public class CourtBookingController {
     ResponseEntity<Object> getCenterOwnerStatisticsCenter(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             CenterOwnerStatisticsCenterRequestData requestData) {
         return courtBookingService.getCenterOwnerStatisticsCenter(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/center-owner/statistics/today")
+    ResponseEntity<Object> getCenterOwnerStatisticsToday(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
+        return courtBookingService.getCenterOwnerStatisticsToday(jwtToken);
+    }
+
+    @GetMapping(value = "/admin/statistics/center")
+    ResponseEntity<Object> getAdminStatisticsCenter(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            AdminStatisticsCenterRequestData requestData) {
+        return courtBookingService.getAdminStatisticsCenter(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/admin/statistics/today")
+    ResponseEntity<Object> getAdminStatisticsToday(@RequestHeader(name = "Authorization", required = true) String jwtToken) {
+        return courtBookingService.getAdminStatisticsToday(jwtToken);
     }
 }

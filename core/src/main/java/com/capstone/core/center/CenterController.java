@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.capstone.core.center.data.request.AddNewCenterRequestData;
+import com.capstone.core.center.data.request.AdminStatisticsCenterListRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterDropdownRequestData;
 import com.capstone.core.center.data.request.CenterOwnerCenterListRequestData;
 import com.capstone.core.center.data.request.CenterOwnerStatisticsCenterListRequestData;
@@ -90,5 +91,11 @@ public class CenterController {
     ResponseEntity<Object> getCenterOwnerStatisticsCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
             CenterOwnerStatisticsCenterListRequestData requestData) {
         return centerService.getCenterOwnerStatisticsCenterList(jwtToken, requestData);
+    }
+
+    @GetMapping(value = "/admin/statistics/center/list")
+    ResponseEntity<Object> getAdminStatisticsCenterList(@RequestHeader(name = "Authorization", required = true) String jwtToken,
+            AdminStatisticsCenterListRequestData requestData) {
+        return centerService.getAdminStatisticsCenterList(jwtToken, requestData);
     }
 }
